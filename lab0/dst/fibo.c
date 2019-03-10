@@ -3,7 +3,7 @@
 int fibo(int n){
     int a = 1;
     int b = 1;
-    int c;
+    int c = 0;
     if (n == 0)
 	return 0;
     else if (n == 1)
