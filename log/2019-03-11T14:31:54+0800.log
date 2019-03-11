@@ -1,0 +1,6 @@
+Autotest: Begin at 2019年 03月 11日 星期一 14:31:54 CST
+[32m[ test.sh found ][0m
+[32m[ lab0_exam.c found ][0m
+文件 /home/git/ostest/target/17231162/lab0-exam-2019-03-11T14:31:54+0800-QA3En/dst_exam/lab0_exam.c 和 stand_lab0_exam 不同
+[31m[01m[ You have not passed bash testcase ][0m
+[33m[01m[ You got 20 (of 100) this time. 2019年 03月 11日 星期一 14:31:55 CST ][0m
