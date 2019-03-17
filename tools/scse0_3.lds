@@ -10,7 +10,7 @@ SECTIONS
 {
 . = 0x80010000;
 .text : { *(.text) }
-. = 0x8040000;
+. = 0x80400000;
 .data : { *(.data) }
 .bss : { *(.bss) }
 end = . ;
