@@ -76,20 +76,20 @@ int readelf(u_char *binary, int size)
 		sh_entry_count = ehdr->e_shnum;
 		sh_entry_size = ehdr->e_shentsize;
 	} else if (format == 2) {
-		shoff = (u_int32_t)*(binary + 32);
-		shoff <<8;
-		shoff += (u_int32_t)*(binary + 33);
+		shoff = (u_int32_t)*(binary + 33);
 		shoff <<8;
 		shoff += (u_int32_t)*(binary + 34);
 		shoff <<8;
 		shoff += (u_int32_t)*(binary + 35);
+		shoff <<8;
+		shoff += (u_int32_t)*(binary + 36);
 		ptr_sh_table = binary + shoff;
-		sh_entry_count = (u_int16_t)*(binary + 48);
+		sh_entry_count = (u_int16_t)*(binary + 49);
 		sh_entry_count << 8;
-		sh_entry_count += (u_int16_t)*(binary + 49);
-		sh_entry_size = (u_int16_t)*(binary + 50);
+		sh_entry_count += (u_int16_t)*(binary + 50);
+		sh_entry_size = (u_int16_t)*(binary + 51);
 		sh_entry_size <<8;
-		sh_entry_size += (u_int16_t)*(binary + 51);	
+		sh_entry_size += (u_int16_t)*(binary + 52);	
 	}
 		
         // for each section header, output section number and section addr.
