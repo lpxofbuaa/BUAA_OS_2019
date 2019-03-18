@@ -29,6 +29,12 @@ int is_elf_format(u_char *binary)
         return 0;
 }
 
+int check_format(u_char *binary)
+{
+	Elf32_Ehdr *ehdr = (Elf32_Ehdr *)binary;
+	return ehdr->e_ident[5];
+}
+
 /* Overview:
  *   read an elf format binary file. get ELF's information
  *
@@ -44,12 +50,16 @@ int readelf(u_char *binary, int size)
         Elf32_Ehdr *ehdr = (Elf32_Ehdr *)binary;
 
         int Nr;
+	int format;
+	unsigned char *buffer;
+	u_int32_t buf;
+	u_int32_t t;
 
-        Elf32_Phdr *phdr = NULL;
+        Elf32_Shdr *shdr = NULL;
 
-        u_char *ptr_ph_table = NULL;
-        Elf32_Half ph_entry_count;
-        Elf32_Half ph_entry_size;
+        u_char *ptr_sh_table = NULL;
+        Elf32_Half sh_entry_count;
+        Elf32_Half sh_entry_size;
 
 
         // check whether `binary` is a ELF file.
@@ -57,17 +67,34 @@ int readelf(u_char *binary, int size)
                 printf("not a standard elf format\n");
                 return 0;
         }
+	format = check_format(binary);
 
         // get section table addr, section header number and section header size
-	ptr_ph_table = binary + ehdr->e_phoff;
-	ph_entry_count = ehdr->e_phnum;
-	ph_entry_size = ehdr->e_phentsize;
+	ptr_sh_table = binary + ehdr->e_shoff;
+	sh_entry_count = ehdr->e_shnum;
+	sh_entry_size = ehdr->e_shentsize;
 		
         // for each section header, output section number and section addr.
-	for (Nr = 0; Nr < ph_entry_count; Nr++) {
-		phdr = (Elf32_Phdr *)ptr_ph_table;
-		printf("%d:0x%x\n", Nr, phdr->p_offset);
-		ptr_ph_table += ph_entry_size;
+	for (Nr = 0; Nr < sh_entry_count; Nr++) {
+		if (format == 1) 
+		{
+			shdr = (Elf32_Shdr *)ptr_sh_table;
+			printf("%d:0x%x\n", Nr, shdr->sh_addr);
+			ptr_sh_table += sh_entry_size;
+		} else if (format == 2)
+		{
+			buffer = (ptr_sh_table + 12);
+			buf = (u_int32_t)*buffer;
+			buf = buf<<8;
+			buf += (u_int32_t)*(buffer+1);
+			buf = buf<<8;
+			buf += (u_int32_t)(*(buffer+2));
+			buf = buf<<8;
+			buf += (u_int32_t)(*(buffer+3));
+			printf("%d:0x%x\n", Nr,buf);
+			
+			ptr_sh_table += sh_entry_size;	
+		}
 	}
 
         return 0;
