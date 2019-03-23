@@ -58,10 +58,55 @@ lp_Print(void (*output)(void *, char *, int),
 
     for(;;) {
 	{ 
-	    /* scan for the next '%' */
+		s = buf;
+		while ((*fmt != '\0')&&(*fmt != '%')&&(s - buf < LP_MAX_BUF - 1))    
+		{
+			*s = *fmt;
+			s++;
+			fmt++;
+		}
+		*s = '\0';
+		OUTPUT(arg, buf, s-buf);
+		if (*fmt == '\0') break;
+		if (*fmt != '%') continue;
+		fmt++;
+		
+		/* scan for the next '%' */
+
 	    /* flush the string found so far */
 
 	    /* are we hitting the end? */
+	}
+	ladjust = 0;
+	width = 0;
+	longFlag = 0;
+	prec = 0;
+	if (*fmt == '-') 
+	{
+		ladjust = 1; 
+		padc = ' '; 
+		fmt++; 
+	} else if (*fmt == '0')
+	{
+		ladjust = 0;
+		padc = '0';
+		fmt++;
+	}
+	while (IsDigit(*fmt))
+	{
+		width = width*10 + *fmt - '0';
+		fmt++;
+	}
+	if (*fmt == '.') fmt++;
+	while (IsDigit(*fmt))
+	{
+		prec = prec*10 + *fmt - '0';
+		fmt++;
+	}
+	if (*fmt == 'l') 
+	{
+		fmt++;
+		longFlag = 1;
 	}
 
 	/* we found a '%' */
