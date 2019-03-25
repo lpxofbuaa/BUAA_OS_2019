@@ -45,12 +45,15 @@ lp_Print(void (*output)(void *, char *, int),
 
     char c;
     char *s;
+    int *in;
+    long int *longin;
     long int num;
 
     int longFlag;
     int negFlag;
     int width;
     int prec;
+    int arraysize;
     int ladjust;
     char padc;
 
@@ -81,6 +84,8 @@ lp_Print(void (*output)(void *, char *, int),
 	width = 0;
 	longFlag = 0;
 	prec = 0;
+	arraysize = 0;
+	padc = ' ';
 	if (*fmt == '-') 
 	{
 		ladjust = 1; 
@@ -102,6 +107,12 @@ lp_Print(void (*output)(void *, char *, int),
 	{
 		prec = prec*10 + *fmt - '0';
 		fmt++;
+	}
+	if (*fmt == '#') fmt++;
+	while (IsDigit(*fmt))
+	{
+		arraysize = arraysize*10 + *fmt - '0';
+		fmt++;	
 	}
 	if (*fmt == 'l') 
 	{
@@ -196,6 +207,55 @@ lp_Print(void (*output)(void *, char *, int),
 	    length = PrintString(buf, s, width, ladjust);
 	    OUTPUT(arg, buf, length);
 	    break;
+
+	 case 'a':
+	 case 'A':
+	    if (longFlag == 1)
+	    {
+		longin = (long int*)va_arg(ap, long int *);
+		buf[0] = '{';
+		OUTPUT(arg, buf, 1);
+		while (arraysize > 0)
+		{
+			if (*longin >= 0) negFlag = 0;
+			else negFlag = 1;
+			length = PrintNum(buf, *longin, 10, negFlag, width, ladjust, padc, 0);
+			OUTPUT(arg, buf, length);
+			arraysize--;
+			longin++;
+			if (arraysize > 0)
+			{
+				buf[0] = ',';
+				OUTPUT(arg, buf, 1);
+			}
+		}
+		buf[0] = '}';
+		OUTPUT(arg, buf, 1);
+	    } else if (longFlag == 0)
+            {
+                 in = (int*)va_arg(ap, int *);
+                 buf[0] = '{';
+                 OUTPUT(arg, buf, 1);
+                 while (arraysize > 0)
+                 {
+                         if (*in >= 0) negFlag = 0;
+                         else negFlag = 1;
+                         length = PrintNum(buf, *in, 10, negFlag, width, ladjust, padc, 0);
+                         OUTPUT(arg, buf, length);
+                         arraysize--;
+                         in++;
+                         if (arraysize > 0)
+                         {
+                                 buf[0] = ',';
+                                 OUTPUT(arg, buf, 1);
+                         }
+                 }
+                 buf[0] = '}';
+                 OUTPUT(arg, buf, 1);
+            }
+	    break;
+	   
+
 
 	 case '\0':
 	    fmt --;
