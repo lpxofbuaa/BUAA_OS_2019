@@ -219,7 +219,10 @@ lp_Print(void (*output)(void *, char *, int),
 		{
 			if (*longin >= 0) negFlag = 0;
 			else negFlag = 1;
-			length = PrintNum(buf, *longin, 10, negFlag, width, ladjust, padc, 0);
+			if (negFlag == 1)
+				length = PrintNum(buf, - *longin, 10, negFlag, width, ladjust, padc, 0);
+			else
+				length = PrintNum(buf, *longin, 10, negFlag, width, ladjust, padc, 0);
 			OUTPUT(arg, buf, length);
 			arraysize--;
 			longin++;
@@ -240,7 +243,10 @@ lp_Print(void (*output)(void *, char *, int),
                  {
                          if (*in >= 0) negFlag = 0;
                          else negFlag = 1;
-                         length = PrintNum(buf, *in, 10, negFlag, width, ladjust, padc, 0);
+                         if (negFlag == 1)
+			 	length = PrintNum(buf, - *in, 10, negFlag, width, ladjust, padc, 0);
+			 else
+				length = PrintNum(buf, *in, 10, negFlag, width, ladjust, padc, 0);
                          OUTPUT(arg, buf, length);
                          arraysize--;
                          in++;
