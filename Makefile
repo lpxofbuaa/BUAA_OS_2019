@@ -11,15 +11,17 @@ lib_dir		  := lib
 tools_dir	  := tools
 test_dir          :=
 vmlinux_elf	  := gxemul/vmlinux
+extra		  := extra
 
 link_script   := $(tools_dir)/scse0_3.lds
 
-modules		  := boot drivers init lib $(test_dir)
+modules		  := boot drivers init lib $(test_dir) $(extra)
 objects		  := $(boot_dir)/start.o			  \
 				 $(init_dir)/main.o			  \
 				 $(init_dir)/init.o			  \
 			   	 $(drivers_dir)/gxconsole/console.o \
-				 $(lib_dir)/*.o
+				 $(lib_dir)/*.o 	\
+				 $(extra)/calculator.o
 
 ifneq ($(test_dir),)
 objects :=$(objects) $(test_dir)/*.o
