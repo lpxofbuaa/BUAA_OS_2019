@@ -82,6 +82,7 @@ lp_Print(void (*output)(void *, char *, int),
 	width = 0;
 	longFlag = 0;
 	prec = 0;
+	padc = ' ';
 	if (*fmt == '-') 
 	{
 		ladjust = 1; 
