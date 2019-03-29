@@ -66,7 +66,8 @@ lp_Print(void (*output)(void *, char *, int),
 			fmt++;
 		}
 		*s = '\0';
-		OUTPUT(arg, buf, s-buf);
+		if (s - buf > 0)
+			OUTPUT(arg, buf, s-buf);
 		if (*fmt == '\0') break;
 		if (*fmt != '%') continue;
 		fmt++;
@@ -81,6 +82,7 @@ lp_Print(void (*output)(void *, char *, int),
 	width = 0;
 	longFlag = 0;
 	prec = 0;
+	padc = ' ';
 	if (*fmt == '-') 
 	{
 		ladjust = 1; 
