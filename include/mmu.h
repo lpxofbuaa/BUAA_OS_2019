@@ -13,7 +13,7 @@
 /*
  * Part 1.  MIPS definitions.
  */
-#define BY2PG		4096		// bytes to a page
+#define BY2PG		4096		// bytes to a page 4KB
 #define PDMAP		(4*1024*1024)	// bytes mapped by a page directory entry
 #define PGSHIFT		12
 #define PDSHIFT		22		// log2(PDMAP)
