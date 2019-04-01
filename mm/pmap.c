@@ -18,7 +18,7 @@ static u_long freemem;
 static u_long minva;
 
 
-static struct Page_list page_free_list;	/* Free list of physical pages */
+struct Page_list page_free_list;	/* Free list of physical pages */
 
 
 /* Overview:
