@@ -55,7 +55,7 @@ static void *alloc(u_int n, u_int align, int clear)
      * linker did *not* assign to any kernel code or global variables. */
     if (freemem == 0) {
         minva = (u_long)end;
-	freemem = KADDR(maxpa);
+	freemem = maxpa + ULIM;
     }
 	if (n > freemem - minva) {
 		panic("out of memorty\n");
@@ -63,7 +63,7 @@ static void *alloc(u_int n, u_int align, int clear)
 	}
 
     /* Step 1: Round up `freemem` up to be aligned properly */
-    freemem = ROUND(freemem, align);
+    freemem = ROUNDDOWN(freemem, align);
 
     /* Step 2: Save current value of `freemem` as allocated chunk. */
     alloced_mem = freemem - n;
@@ -189,7 +189,7 @@ page_init(void)
 	LIST_INIT(&page_free_list);
 
     /* Step 2: Align `freemem` up to multiple of BY2PG. */
-	freemem = ROUND(freemem, BY2PG);
+	freemem = ROUNDDOWN(freemem, BY2PG);
 	busy_pages_num = (maxpa - PADDR(freemem))/BY2PG;
 
     /* Step 3: Mark all memory blow `freemem` as used(set `pp_ref`
@@ -199,8 +199,8 @@ page_init(void)
 	}
 
     /* Step 4: Mark the other memory as free. */
-	for (i = npage - 1; i >= busy_pages_num; i--) {
-		pages[npage - i - 1].pp_ref = 0;
+	for (i = 0; i < npage - busy_pages_num; i++) {
+		pages[i].pp_ref = 0;
 		LIST_INSERT_HEAD(&page_free_list, &pages[i], pp_link);
 	}
 }
@@ -538,7 +538,7 @@ physical_memory_manage_check(void)
 	j=0;
 	//printf("into test\n");
 	while(p!=NULL){
-	//      printf("%d %d\n",p->pp_ref,answer2[j]);
+	     // printf("%d %d\n",p->pp_ref,answer2[j]);
 			assert(p->pp_ref==answer2[j++]);
 			p=LIST_NEXT(p,pp_link);
 	}
