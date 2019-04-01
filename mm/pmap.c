@@ -15,6 +15,8 @@ Pde *boot_pgdir;
 
 struct Page *pages;
 static u_long freemem;
+static u_long minva;
+
 
 static struct Page_list page_free_list;	/* Free list of physical pages */
 
@@ -52,17 +54,22 @@ static void *alloc(u_int n, u_int align, int clear)
     /* Initialize `freemem` if this is the first time. The first virtual address that the
      * linker did *not* assign to any kernel code or global variables. */
     if (freemem == 0) {
-        freemem = (u_long)end;
+        minva = (u_long)end;
+	freemem = KADDR(maxpa);
     }
+	if (n > freemem - minva) {
+		panic("out of memorty\n");
+		return (void *)-E_NO_MEM;
+	}
 
     /* Step 1: Round up `freemem` up to be aligned properly */
     freemem = ROUND(freemem, align);
 
     /* Step 2: Save current value of `freemem` as allocated chunk. */
-    alloced_mem = freemem;
+    alloced_mem = freemem - n;
 
     /* Step 3: Increase `freemem` to record allocation. */
-    freemem = freemem + n;
+    freemem = freemem - n;
 
     /* Step 4: Clear allocated chunk if parameter `clear` is set. */
     if (clear) {
@@ -70,7 +77,7 @@ static void *alloc(u_int n, u_int align, int clear)
     }
 
     // We're out of memory, PANIC !!
-    if (PADDR(freemem) >= maxpa) {
+    if (freemem < minva) {
         panic("out of memorty\n");
         return (void *)-E_NO_MEM;
     }
@@ -175,7 +182,7 @@ void mips_vm_init()
 void
 page_init(void)
 {
-    	int busy_pages_num = PADDR(freemem)/BY2PG;
+    	int busy_pages_num;
 	int i = 0;
 	/* Step 1: Initialize page_free_list. */
     /* Hint: Use macro `LIST_INIT` defined in include/queue.h. */
@@ -183,16 +190,17 @@ page_init(void)
 
     /* Step 2: Align `freemem` up to multiple of BY2PG. */
 	freemem = ROUND(freemem, BY2PG);
+	busy_pages_num = (maxpa - PADDR(freemem))/BY2PG;
 
     /* Step 3: Mark all memory blow `freemem` as used(set `pp_ref`
      * filed to 1) */
 	for (i = 0; i < busy_pages_num; i++) {
-		pages[i].pp_ref = 1;
+		pages[npage - i - 1].pp_ref = 1;
 	}
 
     /* Step 4: Mark the other memory as free. */
 	for (i = npage - 1; i >= busy_pages_num; i--) {
-		pages[i].pp_ref = 0;
+		pages[npage - i - 1].pp_ref = 0;
 		LIST_INSERT_HEAD(&page_free_list, &pages[i], pp_link);
 	}
 }
