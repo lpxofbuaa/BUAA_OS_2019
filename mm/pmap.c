@@ -191,10 +191,35 @@ page_init(void)
 	}
 
     /* Step 4: Mark the other memory as free. */
-	for (i = busy_pages_num; i < npage; i++) {
+	for (i = npage - 1; i >= busy_pages_num; i--) {
 		pages[i].pp_ref = 0;
 		LIST_INSERT_HEAD(&page_free_list, &pages[i], pp_link);
 	}
+}
+
+void 
+get_page_status(int pa)
+{
+	static int var1 = 1;
+	int var2 = 0;
+	struct Page *ptmp;
+	struct Page *tmp;
+	
+	ptmp = pa2page((u_long)pa);
+	if (ptmp->pp_ref != 0)
+		var2 = 3;
+	else {
+		var2 = 2;
+		LIST_FOREACH(tmp,&page_free_list,pp_link) {
+			if (tmp == ptmp) {
+				var2 = 1;
+				break;
+			}
+		}
+	}
+	printf("times:%d,page status:%d\n",var1,var2);
+	var1++;
+
 }
 
 /*Overview:

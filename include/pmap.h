@@ -90,6 +90,7 @@ void page_init(void);
 void page_check();
 void physical_memory_manage_check();
 int page_alloc(struct Page **pp);
+void get_page_status(int pa);
 void page_free(struct Page *pp);
 void page_decref(struct Page *pp);
 int pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte);
