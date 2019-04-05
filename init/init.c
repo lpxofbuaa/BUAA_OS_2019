@@ -13,9 +13,9 @@ void mips_init()
 	mips_vm_init();
 	page_init();
 
-	physical_memory_manage_check();
+	//physical_memory_manage_check();
 
-        //page_check();
+        page_check();
 
 	panic("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
 
