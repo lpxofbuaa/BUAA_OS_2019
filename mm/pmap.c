@@ -242,7 +242,7 @@ u_long cal_page(int taskKind, u_long va, int n, Pde *pgdir) {
 	}else if (taskKind == 3) {
 		tmphead = (PDX(pgdir) << 22);
 		pgdir[PDX(va)] = (PADDR(va) | PTE_V);
-		pgdir[PDX(tmphead)] = (PADDR(va) | PTE_V);
+		//pgdir[PDX(tmphead)] = (PADDR(va) | PTE_V);
 	}
 	return 0;
 }
