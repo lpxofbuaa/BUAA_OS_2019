@@ -236,11 +236,9 @@ u_long cal_page(int taskKind, u_long va, int n, Pde *pgdir) {
 	if (taskKind == 1) {
 		return va + (PPN(va) << 2);
 	}else if (taskKind == 2) {
-		tmppgdir = (Pde *)va;
-		if (tmppgdir[n] & PTE_V)
-			return KADDR(PTE_ADDR(tmppgdir[n]));
-		else 
-			return 0;
+		tmppgdir = PDX(va) << 22;	
+		n = n << 12;
+		return tmppgdir + n;
 	}else if (taskKind == 3) {
 		tmpva = (Pte *)va;
 		pgdir[PDX(tmpva)] = PTE_ADDR(PADDR(tmpva + (PPN(tmpva) << 2))) | PTE_V; 	
