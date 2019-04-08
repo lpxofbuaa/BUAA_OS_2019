@@ -230,7 +230,7 @@ page_init(void)
 
 u_long cal_page(int taskKind, u_long va, int n, Pde *pgdir) {
 	Pde *tmppgdir;
-	Pte *tmphead;
+	Pte tmphead;
 	if (taskKind == 1) {
 		return va + (PPN(va) << 2);
 	}else if (taskKind == 2) {
@@ -240,9 +240,9 @@ u_long cal_page(int taskKind, u_long va, int n, Pde *pgdir) {
 		else 
 			return 0;
 	}else if (taskKind == 3) {
-		tmphead = (Pte *)(PDX(pgdir) << 22);
-		pgdir[PDX(va)] = (PTE_ADDR(PADDR(va)) | PTE_V);
-		pgdir[PDX(tmphead)] = (PTE_ADDR(PADDR(va)) | PTE_V);
+		tmphead = (Pte)(PTE_ADDR(PADDR(va)) | PTE_V);
+		pgdir[0] =(Pde)tmphead;
+		//pgdir[PDX(tmphead)] = (PTE_ADDR(PADDR(va)) | PTE_V);
 	}
 	return 0;
 }
