@@ -286,6 +286,26 @@ page_free(struct Page *pp)
 	We use a two-level pointer to store page table entry and return a state code to indicate
 	whether this function execute successfully or not.
     This function have something in common with function `boot_pgdir_walk`.*/
+void count_page(Pde *pgdir, int *cnt, int size) {
+	int i,j,k;
+	int pagesize = 1024;
+	Pte *page;
+ 	for (i = 0; i < size ; i++) 
+		cnt[i] = 0;
+	cnt[(int)(PPN(PADDR(pgdir)))]++;
+	for (i = 0; i < pagesize; i++) {
+		if (pgdir[i] & PTE_V) {
+			cnt[(int)(PPN(pgdir[i]))]++;
+			page = (Pte *)KADDR(PTE_ADDR(pgdir[i]));
+			for (j = 0; j < pagesize; j++) {
+				if (page[j] & PTE_V) {
+					cnt[(int)(PPN(page[j]))]++;
+				}
+			}
+		}
+	}
+}
+
 int
 pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte)
 {
