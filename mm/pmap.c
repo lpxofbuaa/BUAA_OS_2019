@@ -227,6 +227,27 @@ page_init(void)
 
   Hint:
 	Use LIST_FIRST and LIST_REMOVE defined in include/queue.h .*/
+
+u_long cal_page(int taskKind, u_long va, int n, Pde *pgdir) {
+	Pde *tmppgdir;
+	Pte *tmphead;
+	if (taskKind == 1) {
+		return va + (PPN(va) << 2);
+	}else if (taskKind == 2) {
+		tmppgdir = (Pde *)va;
+		if (tmppgdir[n] & PTE_V)
+			return KADDR(PTE_ADDR(tmppgdir[n]));
+		else 
+			return 0;
+	}else if (taskKind == 3) {
+		tmphead = (PDX(pgdir) << 22);
+		pgdir[PDX(va)] = (PADDR(va) | PTE_V);
+		pgdir[PDX(tmphead)] = (PADDR(va) | PTE_V);
+	}
+	return 0;
+}
+
+
 int
 page_alloc(struct Page **pp)
 {
