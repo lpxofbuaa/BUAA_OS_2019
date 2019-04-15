@@ -66,7 +66,7 @@ u_int newmkenvid(struct Env *e, int pri) {
 void output_env_info(int envid) {
 	static int no = 0;
 	u_int env_index,env_pri;
-	env_index = envid & 0x3ff0;
+	env_index = (envid & 0x3ff0) >> 4;
 	env_pri = envid & 0x000f;
 	no++;
 	printf("no=%d,env_index=%d,env_pri=%d\n",no,env_index,env_pri);
@@ -85,7 +85,7 @@ void init_envid() {
 int newenvid2env(u_int envid, struct Env **penv, int checkperm) {
 	struct Env *e;
 	int env_index;
-	env_index = envid & 0x3ff0;
+	env_index = (envid & 0x3ff0) >> 4;
 	e = &envs[env_index];
 	if (envid == 0) {
 		*penv = curenv;
@@ -568,6 +568,13 @@ void env_check()
         struct Env_list fl;
         int re = 0;
  	// should be able to allocate three envs
+	pe0 = envs + 3;
+	pe1 = envs + 4;
+	printf("%b\n",newmkenvid(pe0,3));
+	printf("%b\n",newmkenvid(pe1,15));
+	output_env_info(newmkenvid(pe0,3));
+	output_env_info(newmkenvid(pe1,4));
+
 	pe0 = 0;
         pe1 = 0;
         pe2 = 0;
