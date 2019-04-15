@@ -29,6 +29,98 @@ extern char *KERNEL_SP;
  *  return e's envid on success.
  */
 
+int check_same_root(u_int envid1, u_int envid2) {
+	struct Env *e1,*e2;
+	envid2env(envid1,&e1,0);
+	envid2env(envid2,&e2,0);
+	if (e1->env_status == ENV_NOT_RUNNABLE || e2->env_status == ENV_NOT_RUNNABLE) {
+		return -1;
+	}
+	while (e1->env_parent_id != 0 && e2->env_parent_id != 0) {
+		if (e1->env_parent_id != 0) {
+			envid2env(e1->env_parent_id,&e1,0);
+		}
+		if (e2->env_parent_id != 0) {
+			envid2env(e2->env_parent_id,&e2,0);
+		}
+	}
+	if (e1->env_id == e2->env_id) {
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
+int find_father(struct Env *e,int index,int *a,int init) {
+	static int counter = 0;
+	int i = index;
+	int r;
+	if (init) {
+		counter = 0;
+		return 0;
+	}
+
+	if (e->env_parent_id == 0) {
+		counter ++;
+		a[i] = counter;
+		return counter;
+	} else if (a[ENVX(e->env_parent_id)] == 0) {
+		r = find_father(&envs[ENVX(e->env_parent_id)],ENVX(e->env_parent_id),a,0);
+		a[i] = r;	
+	} else {
+		a[i] = a[ENVX(e->env_parent_id)];
+	}
+	return a[i];
+}
+
+int find_and_change(int treenum,int index,int *a) {
+	int r;
+	if (index == NENV - 1) {
+		if (a[index] != treenum) {
+			return 0;
+		} else if (envs[index].env_status == ENV_NOT_RUNNABLE) {
+			printf("something is wrong!\n");
+			return -1;
+		} else {
+			envs[index].env_status = ENV_NOT_RUNNABLE;
+			return 0;
+		}
+	}
+	if (a[index] != treenum) {
+		r = find_and_change(treenum,index + 1, a);
+		return r;
+	}
+	if (envs[index].env_status == ENV_NOT_RUNNABLE) {
+		printf("something is wrong!\n");
+		return -1;
+	} else if (envs[index].env_status != ENV_NOT_RUNNABLE && index < NENV) {
+		r = find_and_change(treenum,index + 1,a);
+		if (r != -1) {
+			envs[index].env_status = ENV_NOT_RUNNABLE;
+		}	
+		return r;
+	} 
+	return 0;
+}
+
+void kill_all(u_int envid) {
+	
+	int a[NENV] = {0};
+	int i;
+	int treenum;
+	find_father(0,0,0,1);
+	for (i = 0; i < NENV; i++) {
+		if (a[i] == 0) {
+			find_father(&envs[i],i,a,0);
+		}
+	}
+	treenum = a[ENVX(envid)];
+	find_and_change(treenum,0,a);
+	
+
+	
+}
+
 u_int mkenvid(struct Env *e)
 {
 	static u_long next_env_id = 0;
