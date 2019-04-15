@@ -269,10 +269,10 @@ static int load_icode_mapper(u_long va, u_int32_t sgsize,
 			else 
 				bcopy(bin,page2kva(p) + offset,bin_size);
 		} else {
-			if (BY2PG + i < bin_size)
+			if (BY2PG + i - offset < bin_size)
 				bcopy(bin + i - offset,page2kva(p),BY2PG);
 			else
-				bcopy(bin + i - offset,page2kva(p),bin_size - i);
+				bcopy(bin + i - offset,page2kva(p),bin_size - (i - offset));
 		}
 		r = page_insert(env->env_pgdir,&p,va + i,PTE_V|PTE_R);
 		if (r < 0)
@@ -332,14 +332,14 @@ load_icode(struct Env *e, u_char *binary, u_int size)
     /*Step 1: alloc a page. */
 	r = page_alloc(&p);
 	if (r < 0)
-		return r;
+		return;
 
     /*Step 2: Use appropriate perm to set initial stack for new Env. */
     /*Hint: The user-stack should be writable? */
 	perm = PTE_V|PTE_R;
 	r = page_insert(e->env_pgdir,&p,USTACKTOP - BY2PG,perm);
 	if (r < 0)
-		return r;
+		return;
 	
 
 
