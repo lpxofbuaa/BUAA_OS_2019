@@ -55,16 +55,18 @@ u_int newmkenvid(struct Env *e, int pri) {
 	static u_long nowenv_id = 0;
 
 	u_int idx = e - envs;
+	nowenv_id++;
 
-	u_int envid = (++nowenv_id << 15);
-	envid = envid | (idx << 4) | pri;
+	u_int envid = (nowenv_id << 15);
+	envid = envid | (idx << 4);
+	envid = envid | (pri & 0x0f);
 	return envid;
 }
 
 void output_env_info(int envid) {
 	static int no = 0;
 	u_int env_index,env_pri;
-	env_index = envid & 0x7ff0;
+	env_index = envid & 0x3ff0;
 	env_pri = envid & 0x000f;
 	no++;
 	printf("no=%d,env_index=%d,env_pri=%d\n",no,env_index,env_pri);
@@ -83,7 +85,7 @@ void init_envid() {
 int newenvid2env(u_int envid, struct Env **penv, int checkperm) {
 	struct Env *e;
 	int env_index;
-	env_index = envid & 0x7ff0;
+	env_index = envid & 0x3ff0;
 	e = &envs[env_index];
 	if (envid == 0) {
 		*penv = curenv;
