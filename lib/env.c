@@ -286,6 +286,8 @@ static int load_icode_mapper(u_long va, u_int32_t sgsize,
 		p->pp_ref++;
 		bcopy(bin + i - offset,page2kva(p),bin_size - (i - offset));
 		r = page_insert(env->env_pgdir,&p,va + i,PTE_V|PTE_R);
+		if (r < 0)
+			return r;
 		i += BY2PG;
 	}
 
