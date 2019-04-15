@@ -51,6 +51,63 @@ u_int mkenvid(struct Env *e)
  *  return 0 on success,and sets *penv to the environment.
  *  return -E_BAD_ENV on error,and sets *penv to NULL.
  */
+u_int newmkenvid(struct Env *e, int pri) {
+	static u_long nowenv_id = 0;
+
+	u_int idx = e - envs;
+
+	u_int envid = (++nowenv_id << 15);
+	envid = envid | (idx << 4) | pri;
+	return envid;
+}
+
+void output_env_info(int envid) {
+	static int no = 0;
+	u_int env_index,env_pri;
+	env_index = envid & 0x7ff0;
+	env_pri = envid & 0x000f;
+	no++;
+	printf("no=%d,env_index=%d,env_pri=%d\n",no,env_index,env_pri);
+}
+
+void init_envid() {
+	int i;
+	for (i = 0; i < NENV; i++)
+	{
+		if (envs[i].env_status == ENV_RUNNABLE) {
+			envs[i].env_id = newmkenvid(&envs[i],envs[i].env_pri);
+		}
+	}
+}
+
+int newenvid2env(u_int envid, struct Env **penv, int checkperm) {
+	struct Env *e;
+	int env_index;
+	env_index = envid & 0x7ff0;
+	e = &envs[env_index];
+	if (envid == 0) {
+		*penv = curenv;
+		return 0;
+	}
+
+	if (e->env_status == ENV_FREE || e->env_id != envid) {
+		*penv = 0;
+		return -E_BAD_ENV;
+	}
+
+	if (checkperm) {
+		if (!((e->env_id == curenv->env_id) || (e->env_parent_id == curenv->env_id))) {
+			*penv = 0;
+			return -E_BAD_ENV;
+		}
+	}
+
+	*penv = e;
+	return 0;
+	
+}
+
+
 int envid2env(u_int envid, struct Env **penv, int checkperm)
 {
         struct Env *e;

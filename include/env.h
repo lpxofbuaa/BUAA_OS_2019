@@ -56,6 +56,11 @@ void env_create_priority(u_char *binary, int size, int priority);
 void env_create(u_char *binary, int size);
 void env_destroy(struct Env *e);
 
+u_int newmkenvid(struct Env *e, int pri);
+void output_env_info(int envid);
+void init_envid();
+int newenvid2env(u_int envid,struct Env **penv, int checkperm);
+
 int envid2env(u_int envid, struct Env **penv, int checkperm);
 void env_run(struct Env *e);
 
