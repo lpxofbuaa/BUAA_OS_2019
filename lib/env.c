@@ -102,6 +102,7 @@ env_init(void)
 	int i;
     /*Step 1: Initial env_free_list. */
 	LIST_INIT(&env_free_list);
+	
 
     /*Step 2: Travel the elements in 'envs', init every element(mainly initial its status, mark it as free)
      * and inserts them into the env_free_list as reverse order. */
@@ -211,7 +212,8 @@ env_alloc(struct Env **new, u_int parent_id)
     
     /*Step 2: Call certain function(has been implemented) to init kernel memory layout for this new Env.
      *The function mainly maps the kernel address to this new Env address. */
-	env_setup_vm(e);
+	r = env_setup_vm(e);
+	if (r < 0) return r;
 
     /*Step 3: Initialize every field of new Env with appropriate values*/
 	e->env_parent_id = parent_id;
@@ -265,16 +267,16 @@ static int load_icode_mapper(u_long va, u_int32_t sgsize,
 		p->pp_ref++;
 		if (i == 0) {
 			if (BY2PG - offset < bin_size)
-				bcopy(bin,page2kva(p) + offset,BY2PG - offset);
+				bcopy(bin,(void *)(page2kva(p) + offset),BY2PG - offset);
 			else 
-				bcopy(bin,page2kva(p) + offset,bin_size);
+				bcopy(bin,(void *)(page2kva(p) + offset),bin_size);
 		} else {
 			if (BY2PG + i - offset < bin_size)
-				bcopy(bin + i - offset,page2kva(p),BY2PG);
+				bcopy(bin + i - offset,(void *)(page2kva(p)),BY2PG);
 			else
-				bcopy(bin + i - offset,page2kva(p),bin_size - (i - offset));
+				bcopy(bin + i - offset,(void *)(page2kva(p)),bin_size - (i - offset));
 		}
-		r = page_insert(env->env_pgdir,&p,va + i,PTE_V|PTE_R);
+		r = page_insert(env->env_pgdir,p,va + i,PTE_V|PTE_R);
 		if (r < 0)
 			return r;
 	}
@@ -284,8 +286,8 @@ static int load_icode_mapper(u_long va, u_int32_t sgsize,
 		if (r < 0)
 			return r;
 		p->pp_ref++;
-		bcopy(bin + i - offset,page2kva(p),bin_size - (i - offset));
-		r = page_insert(env->env_pgdir,&p,va + i,PTE_V|PTE_R);
+		bcopy(bin + i - offset,(void *)(page2kva(p)),bin_size - (i - offset));
+		r = page_insert(env->env_pgdir,p,va + i,PTE_V|PTE_R);
 		if (r < 0)
 			return r;
 		i += BY2PG;
@@ -298,7 +300,7 @@ static int load_icode_mapper(u_long va, u_int32_t sgsize,
 		if (r < 0)
 			return r;
 		p->pp_ref++;
-		r = page_insert(env->env_pgdir,&p,va + i,PTE_V|PTE_R);
+		r = page_insert(env->env_pgdir,p,va + i,PTE_V|PTE_R);
 		if (r < 0)
 			return r;
 		i += BY2PG;
@@ -339,7 +341,7 @@ load_icode(struct Env *e, u_char *binary, u_int size)
     /*Step 2: Use appropriate perm to set initial stack for new Env. */
     /*Hint: The user-stack should be writable? */
 	perm = PTE_V|PTE_R;
-	r = page_insert(e->env_pgdir,&p,USTACKTOP - BY2PG,perm);
+	r = page_insert(e->env_pgdir,p,USTACKTOP - BY2PG,perm);
 	if (r < 0)
 		return;
 	
@@ -352,6 +354,8 @@ load_icode(struct Env *e, u_char *binary, u_int size)
 	
 
     /***Your Question Here***/
+	e->env_status = ENV_RUNNABLE;
+	LIST_INSERT_HEAD(env_sched_list, e, env_sched_link);
     /*Step 4:Set CPU's PC register as appropriate value. */
 	e->env_tf.pc = entry_point;
 }
@@ -379,6 +383,8 @@ env_create_priority(u_char *binary, int size, int priority)
 
     /*Step 3: Use load_icode() to load the named elf binary. */
 	load_icode(e,binary,size);
+
+
 
 }
 /* Overview:
@@ -448,6 +454,7 @@ void
 env_destroy(struct Env *e)
 {
     /* Hint: free e. */
+	LIST_REMOVE(e,env_sched_link);
 	env_free(e);
 
     /* Hint: schedule to run a new environment. */
