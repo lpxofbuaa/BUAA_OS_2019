@@ -5,6 +5,8 @@
 #include <kclock.h>
 #include <trap.h>
 
+extern void test();
+
 void mips_init()
 {
 	printf("init.c:\tmips_init() is called\n");
@@ -27,6 +29,8 @@ void mips_init()
 	trap_init();
 	kclock_init();
 	//printf("now curenv is 0x%x\n",curenv);
+	
+	test();
 	panic("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
 	while(1);
 	panic("init.c:\tend of mips_init() reached!");
