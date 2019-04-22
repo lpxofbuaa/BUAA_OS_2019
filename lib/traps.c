@@ -7,6 +7,7 @@ extern void handle_reserved();
 extern void handle_tlb();
 extern void handle_sys();
 extern void handle_mod();
+extern void handle_ov();
 unsigned long exception_handlers[32];
 void trap_init(){
 	int i;
@@ -17,12 +18,25 @@ void trap_init(){
 	set_except_vector(2, handle_tlb);
 	set_except_vector(3, handle_tlb);
 	set_except_vector(8, handle_sys);
+	set_except_vector(12,handle_ov);
 }
 void *set_except_vector(int n, void * addr){
 	unsigned long handler=(unsigned long)addr;
 	unsigned long old_handler=exception_handlers[n];
 	exception_handlers[n]=handler;
 	return (void *)old_handler;
+}
+
+void handle_ov_output(unsigned int op) {
+	unsigned int rs;
+	unsigned int rt;
+	rs = (op >> 21);
+	rs = rs & 0x1f;
+	rt = (op >> 16);
+	rt = rt & 0x1f;
+	printf("Instr: 0x%x\n",op);
+	printf("reg %d and reg %d\n",rs,rt);
+	return;	
 }
 
 

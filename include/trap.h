@@ -47,6 +47,7 @@ struct Trapframe { //lr:need to be modified(reference to linux pt_regs) TODO
 };
 void *set_except_vector(int n, void * addr);
 void trap_init();
+void handle_ov_output(unsigned int op);
 
 #endif /* !__ASSEMBLER__ */
 /*
