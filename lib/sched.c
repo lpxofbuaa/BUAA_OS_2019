@@ -17,7 +17,7 @@ void sched_yield(void)
 	struct Env *e = curenv;
 	static int sched_i = 0;
 	if (!e) {
-		if (LIST_EMPTY(&env_sched_list[sched_i]))
+		while (LIST_EMPTY(&env_sched_list[sched_i]))
 			sched_i ^= 1;
 		e = LIST_FIRST(&env_sched_list[sched_i]);
 		times = e->env_pri;
@@ -27,7 +27,7 @@ void sched_yield(void)
 	if (times <= 0) {
 		LIST_REMOVE(e,env_sched_link);
 		LIST_INSERT_HEAD(&env_sched_list[sched_i^1],e,env_sched_link);
-		if (LIST_EMPTY(&env_sched_list[sched_i])) {
+		while (LIST_EMPTY(&env_sched_list[sched_i])) {
 			sched_i ^= 1;
 		}
 		e = LIST_FIRST(&env_sched_list[sched_i]);
