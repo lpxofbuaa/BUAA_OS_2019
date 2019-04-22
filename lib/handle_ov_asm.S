@@ -5,7 +5,8 @@
 
 NESTED(handle_ov, TF_SIZE, sp)
 nop
-
+li	t0, 0
+sb	t0, 0xb5000100
 mfc0 	t0, CP0_STATUS
 li	t1, 0xfffffffe
 and 	t0,t0,t1
@@ -42,6 +43,8 @@ or 	t0, t0, t1
 mtc0	t0, CP0_STATUS
 li	t0, 0
 li	t1, 0
+li	k1, 1
+sb	k1, 0xb5000100
 jr	k0
 rfe
 nop
