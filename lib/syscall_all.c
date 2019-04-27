@@ -63,6 +63,8 @@ u_int sys_getenvid(void)
  */
 void sys_yield(void)
 {
+	bcopy((void *)KERNEL_SP - sizeof(struct Trapframe), (void *)TIMESTACK - sizeof(struct Trapframe), sizeof(struct Trapframe));
+	sched_yield();
 }
 
 /* Overview:
@@ -140,6 +142,18 @@ int sys_mem_alloc(int sysno, u_int envid, u_int va, u_int perm)
 	struct Page *ppage;
 	int ret;
 	ret = 0;
+	if ((PTE_COW & perm)||(va >= UTOP))
+		return -E_INVAL;
+	ret = page_alloc(&ppage);
+	if (ret)
+		return ret;
+	ret = envid2env(envid,&env,1);
+	if (ret)
+		return ret;
+	ret = page_insert(env->env_pgdir,ppage,va,perm|PTE_V);
+	if (ret)
+		return ret;
+	return 0;
 
 }
 
@@ -171,6 +185,25 @@ int sys_mem_map(int sysno, u_int srcid, u_int srcva, u_int dstid, u_int dstva,
 	round_srcva = ROUNDDOWN(srcva, BY2PG);
 	round_dstva = ROUNDDOWN(dstva, BY2PG);
 
+	if ((round_srcva >= UTOP) || (round_dstva >= UTOP))
+		return -E_INVAL;
+	if (perm & PTE_COW)
+		return -E_INVAL;
+	ret = envid2env(srcid, &srcenv, 0);
+	if (ret)
+		return ret;
+	ret = envid2env(dstid, &dstenv, 0);
+	if (ret)
+		return ret;
+	ret = pgdir_walk(srcenv->env_pgdir, round_srcva, 0, &ppte);
+	if (ret)
+		return ret;
+	if (!((Pte)ppte & PTE_V))
+		return 0;
+	if ((!((Pte)ppte & PTE_R)) && (perm & PTE_R))
+		return -E_INVAL;
+	ppage = pa2page(ppte);
+	ret = page_insert(dstenv->env_pgdir, ppage, round_dstva, perm|PTE_V);
     //your code here
 
 	return ret;
@@ -190,7 +223,12 @@ int sys_mem_unmap(int sysno, u_int envid, u_int va)
 	// Your code here.
 	int ret;
 	struct Env *env;
-
+	ret = envid2env(envid, &env, 0);
+	if (ret)
+		return ret;
+	if (va >= UTOP)
+		return -E_INVAL;
+	page_remove(env->env_pgdir, va);
 	return ret;
 	//	panic("sys_mem_unmap not implemented");
 }
@@ -288,6 +326,13 @@ void sys_panic(int sysno, char *msg)
  */
 void sys_ipc_recv(int sysno, u_int dstva)
 {
+	if (dstva >= UTOP)
+		sys_yield();
+	curenv->env_ipc_recving = 1;
+	curenv->env_ipc_dstva = dstva;
+	curenv->env_status = ENV_NOT_RUNNABLE;
+	LIST_REMOVE(curenv, env_sched_link);
+	sys_yield();
 }
 
 /* Overview:
@@ -314,7 +359,22 @@ int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
 	int r;
 	struct Env *e;
 	struct Page *p;
-
+	r = envid2env(envid, &e, 0);
+	if (r)
+		return r;
+	if (!e->env_ipc_recving)
+		return -E_IPC_NOT_RECV;
+	e->env_ipc_value = value;
+	e->env_ipc_recving = 0;
+	e->env_ipc_perm = perm;
+	e->env_ipc_from = curenv->env_id;
+	if (srcva != 0) {
+		r = sys_mem_map(sysno,curenv->env_id,srcva,e->env_id,e->env_ipc_dstva,perm);	
+		if (r)
+			return r;
+	}
+	e->env_status = ENV_RUNNABLE;
+	LIST_INSERT_HEAD(env_sched_list, e, env_sched_link);
 	return 0;
 }
 

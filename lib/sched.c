@@ -23,6 +23,13 @@ void sched_yield(void)
 		times = e->env_pri;
 		times -= 1;
 		env_run(e);
+	} else if (e->env_status != ENV_RUNNABLE) {
+		while (LIST_EMPTY(&env_sched_list[sched_i]))
+			sched_i ^= 1;
+		e = LIST_FIRST(&env_sched_list[sched_i]);
+		times = e->env_pri;
+		times -= 1;
+		env_run(e);
 	}
 	if (times <= 0) {
 		LIST_REMOVE(e,env_sched_link);
