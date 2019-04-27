@@ -315,6 +315,7 @@ pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte)
 	}
 	pgtable = (Pte *)KADDR(PTE_ADDR(*pgdir_entryp));
 
+
     /* Step 3: Set the page table entry to `*ppte` as return value. */
 	*ppte = &pgtable[PTX(va)];
 
