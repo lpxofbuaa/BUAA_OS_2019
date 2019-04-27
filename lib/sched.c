@@ -14,21 +14,24 @@
 void sched_yield(void)
 {
 	static int times = 0;
-	static struct Env *e = NULL;
+	struct Env *e = curenv;
 	static int sched_i = 0;
-	if (times == 0) {
-		if (e) {
-			LIST_REMOVE(e,env_sched_link);
-			LIST_INSERT_HEAD(&env_sched_list[sched_i^1],e,env_sched_link);
-			if (LIST_EMPTY(&env_sched_list[sched_i])) {
-				sched_i ^= 1;
-			}
-			e = LIST_FIRST(&env_sched_list[sched_i]);
-			times = e->env_pri;
-		} else {
-			e = LIST_FIRST(&env_sched_list[sched_i]);
-			times = e->env_pri;
+	if (!e) {
+		while (LIST_EMPTY(&env_sched_list[sched_i]))
+			sched_i ^= 1;
+		e = LIST_FIRST(&env_sched_list[sched_i]);
+		times = e->env_pri;
+		times -= 1;
+		env_run(e);
+	}
+	if (times <= 0) {
+		LIST_REMOVE(e,env_sched_link);
+		LIST_INSERT_HEAD(&env_sched_list[sched_i^1],e,env_sched_link);
+		while (LIST_EMPTY(&env_sched_list[sched_i])) {
+			sched_i ^= 1;
 		}
+		e = LIST_FIRST(&env_sched_list[sched_i]);
+		times = e->env_pri;
 		times -= 1;
 		env_run(e);
 	} else {
