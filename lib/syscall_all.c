@@ -142,7 +142,7 @@ int sys_mem_alloc(int sysno, u_int envid, u_int va, u_int perm)
 	struct Page *ppage;
 	int ret;
 	ret = 0;
-	if ((PTE_COW & perm)||(va >= UTOP))
+	if ((PTE_COW & perm)||(va >= UTOP)||(!(perm & PTE_V)))
 		return -E_INVAL;
 	ret = page_alloc(&ppage);
 	if (ret)
@@ -187,7 +187,7 @@ int sys_mem_map(int sysno, u_int srcid, u_int srcva, u_int dstid, u_int dstva,
 
 	if ((round_srcva >= UTOP) || (round_dstva >= UTOP))
 		return -E_INVAL;
-	if (perm & PTE_COW)
+	if ((perm & PTE_COW)||(!(perm & PTE_V)))
 		return -E_INVAL;
 	ret = envid2env(srcid, &srcenv, 0);
 	if (ret)
