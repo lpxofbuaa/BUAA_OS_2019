@@ -40,15 +40,19 @@ NESTED(handle_sys,TF_SIZE, sp)
 	li	s1, 0x82000000
 	subu	sp, sp, s0
 	sw	s0, 0(s1)
+	sw	a0, 0(sp)
 
 	move	s0, a1
 	move	a1, a2
 	move	a2, a3
+	addiu 	s0, s0, -2
+	blez	s0, tonext
+	nop
 	addiu	s4, s4, 16
 	lw	s1, 0(s4)
 	move	a3, s1
 	li	s2, 16
-	addiu	s0, s0, -3  
+	addiu	s0, s0, -1  
 toask:	
 	blez	s0, tonext
 	nop
