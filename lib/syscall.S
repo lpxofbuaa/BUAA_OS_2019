@@ -29,12 +29,14 @@ NESTED(handle_sys,TF_SIZE, sp)
 
     // TODO: Allocate a space of six arguments on current kernel stack and copy the six arguments to proper location
 	lw	a0, TF_REG4(sp)
+	lw	a1, TF_REG5(sp)
+	lw	a2, TF_REG6(sp)
+	lw	a3, TF_REG7(sp)
 	li	t3, 4
 	mult	t3, a1
 	mflo	t3
 	addiu	t3, t3, 4
-	subu	sp, sp, t3
-	sw	t3, 0(sp)
+	addiu	sp, sp, -44
 	
 	move	t3, a1
 	move	a1, a2
@@ -61,8 +63,7 @@ tonext:
     nop
     
     // TODO: Resume current kernel stack
-	lw	t3, 0(sp)
-	addu	sp, sp, t3
+	addiu	sp, sp, 44
 	
     
     sw      v0, TF_REG2(sp)             // Store return value of function sys_* (in $v0) into trapframe
