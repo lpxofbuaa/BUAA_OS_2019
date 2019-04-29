@@ -9,15 +9,15 @@ umain(void)
 	int i = 0;
 	int j = 0;
 	int whom,perm;
-	while (j != 10) {
-		j = ipc_recv(&whom,0,&perm);
-		writef("b recv num %d\n",j);
-		if (j == 10)
+	while (i < 10) {
+		i = ipc_recv(&whom,0,&perm);
+		writef("b recv num %d\n",i);
+		if (i == 10)
 			break;
+		i++;
 		writef("b send num %d\n",i);
 		ipc_send(2048,i,0,0);
-		i++;
-		
+
 	}
 	
 /*	u_int who, i;
