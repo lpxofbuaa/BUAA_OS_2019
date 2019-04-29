@@ -37,7 +37,9 @@ NESTED(handle_sys,TF_SIZE, sp)
 	mult	s0, a1
 	mflo	s0
 	addiu	s0, s0, 4
-	addiu	sp, sp, -40
+	li	s1, 0x82000000
+	subu	sp, sp, s0
+	sw	s0, 0(s1)
 
 	move	s0, a1
 	move	a1, a2
@@ -64,7 +66,9 @@ tonext:
     nop
     
     // TODO: Resume current kernel stack
-	addiu	sp, sp, 40
+	li	s1, 0x82000000
+	lw	s0, 0(s1)
+	addu	sp, sp, s0
 	
     
     sw      v0, TF_REG2(sp)             // Store return value of function sys_* (in $v0) into trapframe
