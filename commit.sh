@@ -1,3 +1,3 @@
 git add --all
-git commit -m "auto commit"
-git push 
+git commit -a -m "auto commit"
+git push origin lab4-1-exam:lab4-1-exam

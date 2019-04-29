@@ -17,6 +17,7 @@ NESTED(handle_sys,TF_SIZE, sp)
 
     // TODO: Copy the syscall number into $a0.
 	lw	a0, TF_REG4(sp)
+	lw	a1, TF_REG5(sp)
     
     addiu   a0, a0, -__SYSCALL_BASE     // a0 <- relative syscall number
     sll     t0, a0, 2                   // t0 <- relative syscall number times 4
@@ -25,30 +26,43 @@ NESTED(handle_sys,TF_SIZE, sp)
     lw      t2, 0(t1)                   // t2 <- function entry of specific syscall
 
     lw      t0, TF_REG29(sp)            // t0 <- user's stack pointer
-    lw      t3, 16(t0)                  // t3 <- the 5th argument of msyscall
-    lw      t4, 20(t0)                  // t4 <- the 6th argument of msyscall
 
     // TODO: Allocate a space of six arguments on current kernel stack and copy the six arguments to proper location
-	lw	v0, 16(t0)
-	lw	v1, 20(t0)
 	lw	a0, TF_REG4(sp)
-	lw 	a1, TF_REG5(sp)
-	lw	a2, TF_REG6(sp)
-	lw	a3, TF_REG7(sp)
-	addiu 	sp, sp, -24
-	sw	a0, 0(sp)
-	sw	a1, 4(sp)
-	sw	a2, 8(sp)
-	sw	a3, 12(sp)
-	sw	v0, 16(sp)
-	sw	v1, 20(sp)
-    
-    
+	li	t3, 4
+	mult	t3, a1
+	mflo	t3
+	addiu	t3, t3, 4
+	subu	sp, sp, t3
+	sw	t3, 0(sp)
+	
+	move	t3, a1
+	move	a1, a2
+	move	a2, a3
+	addiu	t0, t0, 16
+	lw	t4, 0(t0)
+	move	a3, t4
+	li	t5, 16
+	addiu	t3, t3, -3  
+toask:	
+	blez	t3, tonext
+	nop
+	addiu	t0, t0, 4
+	lw	t4, 0(t0)
+	addu	t6, sp, t5
+	sw	t4, 0(t6)
+	addiu	t5, t5, 4
+	addiu	t3, t3, -1
+  	j 	toask
+	nop
+
+tonext:
     jalr    t2                          // Invoke sys_* function
     nop
     
     // TODO: Resume current kernel stack
-	addiu	sp, sp, 24
+	lw	t3, 0(sp)
+	addu	sp, sp, t3
 	
     
     sw      v0, TF_REG2(sp)             // Store return value of function sys_* (in $v0) into trapframe
@@ -74,3 +88,4 @@ sys_call_table:                         // Syscall Table
     .word sys_ipc_can_send
     .word sys_ipc_recv
     .word sys_cgetc
+    .word sys_spuer_multi_parameter
