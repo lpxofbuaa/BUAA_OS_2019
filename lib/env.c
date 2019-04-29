@@ -403,6 +403,7 @@ env_create(u_char *binary, int size)
 		return;
 	e->env_pri = 1;
 	load_icode(e,binary,size);
+	printf("envid is %d\n",e->env_id);
 }
 
 /* Overview:
