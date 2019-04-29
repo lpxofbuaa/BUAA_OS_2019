@@ -12,6 +12,8 @@ umain(void)
 	while (j != 10) {
 		writef("a send num %d\n",i);
 		ipc_send(4097,i,0,0);
+		if (i == 10)
+			break;
 		j = ipc_recv(&whom,0,&perm);
 		writef("b recv num %d\n",j);
 		i++;
