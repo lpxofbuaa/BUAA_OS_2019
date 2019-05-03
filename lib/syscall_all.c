@@ -253,9 +253,16 @@ int sys_env_alloc(void)
 	int r;
 	struct Env *e;
 
-	r = env_alloc(&e,curenv->env_id);
+	if (curenv)
+		r = env_alloc(&e,curenv->env_id);
+	else
+		r = env_alloc(&e,0);
 	if (r < 0)
 		return r;
+	if (curenv)
+		e->env_pri = curenv->env_pri;
+	else
+		e->env_pri = 1;
 	e->env_status = ENV_NOT_RUNNABLE;
 	bcopy(KERNEL_SP-sizeof(struct Trapframe),&(e->env_tf),sizeof(struct Trapframe));
 	e->env_tf.regs[2] = 0;

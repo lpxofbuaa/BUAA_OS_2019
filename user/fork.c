@@ -205,11 +205,11 @@ fork(void)
 			}
 		}
 		if ((i = syscall_mem_alloc(newenvid,UXSTACKTOP - BY2PG, PTE_V|PTE_R)) < 0)
-			return i;
+			return newenvid;
 		if ((i = syscall_set_pgfault_handler(newenvid,__asm_pgfault_handler, UXSTACKTOP)) < 0)
-			return i;
+			return newenvid;
 		if ((i = syscall_set_env_status(newenvid,ENV_RUNNABLE)) < 0)
-			return i;
+			return newenvid;
 	}
 	return newenvid;
 }
