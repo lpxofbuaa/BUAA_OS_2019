@@ -112,8 +112,11 @@ int sys_set_pgfault_handler(int sysno, u_int envid, u_int func, u_int xstacktop)
 	// Your code here.
 	struct Env *env;
 	int ret;
-
-
+	ret = envid2env(envid,&env,0);
+	if (ret < 0)
+		return ret;
+	env->env_pgfault_handler = func;
+	env->env_xstacktop = xstacktop;
 	return 0;
 	//	panic("sys_set_pgfault_handler not implemented");
 }
@@ -187,7 +190,7 @@ int sys_mem_map(int sysno, u_int srcid, u_int srcva, u_int dstid, u_int dstva,
 
 	if ((round_srcva >= UTOP) || (round_dstva >= UTOP))
 		return -E_INVAL;
-	if ((perm & PTE_COW)||(!(perm & PTE_V)))
+	if (!(perm & PTE_V))
 		return -E_INVAL;
 	ret = envid2env(srcid, &srcenv, 0);
 	if (ret)
@@ -195,14 +198,13 @@ int sys_mem_map(int sysno, u_int srcid, u_int srcva, u_int dstid, u_int dstva,
 	ret = envid2env(dstid, &dstenv, 0);
 	if (ret)
 		return ret;
-	ret = pgdir_walk(srcenv->env_pgdir, round_srcva, 0, &ppte);
-	if (ret)
-		return ret;
-	if (!((Pte)ppte & PTE_V))
-		return 0;
-	if ((!((Pte)ppte & PTE_R)) && (perm & PTE_R))
+	ppage = page_lookup(srcenv->env_pgdir, round_srcva, &ppte);
+	if (!ppage)
 		return -E_INVAL;
-	ppage = pa2page(ppte);
+	if ((!(*ppte & PTE_R)) && (perm & PTE_R)) {
+		printf("change not writable to writable!!\n");
+		return -E_INVAL;
+	}
 	ret = page_insert(dstenv->env_pgdir, ppage, round_dstva, perm|PTE_V);
     //your code here
 
@@ -251,6 +253,13 @@ int sys_env_alloc(void)
 	int r;
 	struct Env *e;
 
+	r = env_alloc(&e,curenv->env_id);
+	if (r < 0)
+		return r;
+	e->env_status = ENV_NOT_RUNNABLE;
+	bcopy(KERNEL_SP-sizeof(struct Trapframe),&(e->env_tf),sizeof(struct Trapframe));
+	e->env_tf.regs[2] = 0;
+	e->env_tf.pc = e->env_tf.cp0_epc;
 
 	return e->env_id;
 	//	panic("sys_env_alloc not implemented");
@@ -274,6 +283,17 @@ int sys_set_env_status(int sysno, u_int envid, u_int status)
 	struct Env *env;
 	int ret;
 
+	if ((status != ENV_RUNNABLE)&&(status != ENV_NOT_RUNNABLE)&&(status != ENV_FREE))
+		return -E_INVAL;
+	ret = envid2env(envid,&env,0);
+	if (ret < 0)
+		return ret;
+	if ((status == ENV_RUNNABLE)&&(env->env_status != ENV_RUNNABLE)) {
+		LIST_INSERT_HEAD(env_sched_list,env,env_sched_link);	
+	} else if((env->env_status == ENV_RUNNABLE)&&(status != ENV_RUNNABLE)) {
+		LIST_REMOVE(env,env_sched_link);
+	}
+	env->env_status = status;
 	return 0;
 	//	panic("sys_env_set_status not implemented");
 }

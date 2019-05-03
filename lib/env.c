@@ -58,12 +58,11 @@ int envid2env(u_int envid, struct Env **penv, int checkperm)
  *      *  If envid is zero, return the current environment.*/
     /*Step 1: Assign value to e using envid. */
 
-	e = &envs[ENVX(envid)];
 	if (envid == 0) { 
 		*penv = curenv;
 		return 0;
 	}
-
+	e = &envs[ENVX(envid)];
         if (e->env_status == ENV_FREE || e->env_id != envid) {
                 *penv = 0;
                 return -E_BAD_ENV;
@@ -454,7 +453,8 @@ void
 env_destroy(struct Env *e)
 {
     /* Hint: free e. */
-	LIST_REMOVE(e,env_sched_link);
+	if (e->env_status == ENV_RUNNABLE)
+		LIST_REMOVE(e,env_sched_link);
 	env_free(e);
 
     /* Hint: schedule to run a new environment. */

@@ -81,16 +81,30 @@ void user_bzero(void *v, u_int n)
 static void
 pgfault(u_int va)
 {
-	u_int *tmp;
+	va = ROUNDDOWN(va,BY2PG);
+	u_int tmp = USTACKTOP;
+	u_int perm = (*vpt)[va/BY2PG]&0xfff&(~PTE_COW);
 	//	writef("fork.c:pgfault():\t va:%x\n",va);
+	if (!((*vpt)[va/BY2PG]&PTE_COW))
+		user_panic("^^^^panic at pgfault^^^^perm doesn't have PTE_COW!!^^^^");
+	
     
     //map the new page at a temporary place
+	if (syscall_mem_alloc(0,tmp,perm|PTE_V|PTE_R) < 0)
+		user_panic("^^panic at pgfault^^mem alloc error^^");
 
 	//copy the content
-	
+	user_bcopy(va,tmp,BY2PG);
     //map the page on the appropriate place
-	
+	if (syscall_mem_unmap(0,va) < 0)
+		user_panic("^^panic at pgfault^^mem unmap for va error^^");
+	if (syscall_mem_map(0,tmp,0,va,perm|PTE_V|PTE_R) < 0)
+		user_panic("^^panic at pgfault^^mem map error^^");
     //unmap the temporary place
+	if (syscall_mem_unmap(0,tmp) < 0)
+		user_panic("^^panic at pgfault^^mem unmap for tmp error^^");
+
+	return;
 	
 }
 
@@ -113,8 +127,42 @@ pgfault(u_int va)
 static void
 duppage(u_int envid, u_int pn)
 {
-	u_int addr;
-	u_int perm;
+	u_int addr = pn*BY2PG;
+	u_int perm = (*vpt)[pn] & 0xfff;
+	int r;
+
+	if (((*vpt)[pn]&PTE_R)) {
+		if ((*vpt)[pn]&PTE_LIBRARY) {
+			//writef("to1\n");
+			r = syscall_mem_map(0,addr,envid,addr,perm|PTE_V|PTE_R|PTE_LIBRARY);
+			//writef("1\n");
+			if (r < 0)
+				return;	
+			//writef("to2\n");
+			r = syscall_mem_map(0,addr,0,addr,perm|PTE_V|PTE_R|PTE_LIBRARY);
+			//writef("2\n");
+			if (r < 0)
+				return;		
+		} else {
+			//writef("to3\n");
+			//writef("0x%x\n",addr);
+			r = syscall_mem_map(0,addr,envid,addr,perm|PTE_V|PTE_R|PTE_COW);
+			//writef("3\n");
+			if (r < 0)
+				return;
+			//writef("to4\n");
+			r = syscall_mem_map(0,addr,0,addr,perm|PTE_V|PTE_R|PTE_COW);
+			//writef("4\n");
+			if (r < 0)
+				return;
+		}
+	} else {
+		//writef("to5\n");
+		r = syscall_mem_map(0,addr,envid,addr,perm|PTE_V);
+		//writef("5\n");
+		if (r < 0)
+			return;
+	}
 
 	//	user_panic("duppage not implemented");
 }
@@ -142,8 +190,27 @@ fork(void)
 	//The parent installs pgfault using set_pgfault_handler
 
 	//alloc a new alloc
-
-
+	set_pgfault_handler(pgfault);	
+	newenvid = syscall_env_alloc();
+	if (newenvid == 0) {
+		env = &envs[ENVX(syscall_getenvid())];
+		return 0;
+	}
+	if (newenvid != 0) {
+		for (i = 0; i < USTACKTOP; i += BY2PG) {
+			if ((*vpd)[PDX(i)]&PTE_V) {
+				if ((*vpt)[i/BY2PG]&PTE_V) {
+					duppage(newenvid,i/BY2PG);
+				}
+			}
+		}
+		if ((i = syscall_mem_alloc(newenvid,UXSTACKTOP - BY2PG, PTE_V|PTE_R)) < 0)
+			return i;
+		if ((i = syscall_set_pgfault_handler(newenvid,__asm_pgfault_handler, UXSTACKTOP)) < 0)
+			return i;
+		if ((i = syscall_set_env_status(newenvid,ENV_RUNNABLE)) < 0)
+			return i;
+	}
 	return newenvid;
 }
 

@@ -181,7 +181,7 @@
                 if (LIST_NEXT((elm), field) != NULL)                            \
                         LIST_NEXT((elm), field)->field.le_prev =                \
                                         (elm)->field.le_prev;                           \
-                *(elm)->field.le_prev = LIST_NEXT((elm), field);                \
+		*(elm)->field.le_prev = LIST_NEXT((elm), field);                \
         } while (0)
 
 /*
