@@ -96,8 +96,6 @@ pgfault(u_int va)
 	//copy the content
 	user_bcopy(va,tmp,BY2PG);
     //map the page on the appropriate place
-	if (syscall_mem_unmap(0,va) < 0)
-		user_panic("^^panic at pgfault^^mem unmap for va error^^");
 	if (syscall_mem_map(0,tmp,0,va,perm|PTE_V|PTE_R) < 0)
 		user_panic("^^panic at pgfault^^mem map error^^");
     //unmap the temporary place
@@ -185,6 +183,8 @@ fork(void)
 	extern struct Env *envs;
 	extern struct Env *env;
 	u_int i;
+	u_int pn;
+	u_int j;
 
 
 	//The parent installs pgfault using set_pgfault_handler
@@ -197,13 +197,25 @@ fork(void)
 		return 0;
 	}
 	if (newenvid != 0) {
-		for (i = 0; i < USTACKTOP; i += BY2PG) {
+		for (i = 0 ; i <= PDX(USTACKTOP); i++) {
+			if ((*vpd)[i]&PTE_V) {
+				pn = i*1024;
+				for (j = 0; j < 1024; j++) {
+					if (((pn+j)*BY2PG) >= USTACKTOP)
+						break;
+					if ((*vpt)[pn+j]&PTE_V) {
+						duppage(newenvid,pn+j);
+					}
+				}
+			}
+		}
+		/*for (i = 0; i < USTACKTOP; i += BY2PG) {
 			if ((*vpd)[PDX(i)]&PTE_V) {
 				if ((*vpt)[i/BY2PG]&PTE_V) {
 					duppage(newenvid,i/BY2PG);
 				}
 			}
-		}
+		}*/
 		if ((i = syscall_mem_alloc(newenvid,UXSTACKTOP - BY2PG, PTE_V|PTE_R)) < 0)
 			return newenvid;
 		if ((i = syscall_set_pgfault_handler(newenvid,__asm_pgfault_handler, UXSTACKTOP)) < 0)
