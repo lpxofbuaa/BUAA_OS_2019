@@ -357,8 +357,9 @@ void sys_ipc_recv(int sysno, u_int dstva)
 		sys_yield();
 	curenv->env_ipc_recving = 1;
 	curenv->env_ipc_dstva = dstva;
+	if (curenv->env_status == ENV_RUNNABLE)
+		LIST_REMOVE(curenv,env_sched_link);
 	curenv->env_status = ENV_NOT_RUNNABLE;
-	LIST_REMOVE(curenv, env_sched_link);
 	sys_yield();
 }
 
