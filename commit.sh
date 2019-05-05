@@ -1,4 +1,4 @@
 make clean
-git add --all
-git commit -m "auto commit"
-git push origin $1:$1 
+git add -A
+git commit -a -m " create_lab4_auto_commit "
+git push origin lab4:lab4
