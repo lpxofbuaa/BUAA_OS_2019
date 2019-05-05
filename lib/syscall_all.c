@@ -406,3 +406,44 @@ int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
 	return 0;
 }
 
+/* Overview:
+ * 	This function is used to write data to device, which is
+ * 	represented by its mapped physical address.
+ * 
+ * Pre-Condition:
+ *      'va' is the startting address of source data, 'len' is the
+ *      length of data (in bytes), 'dev' is the physical address of
+ *      the device
+ * 	
+ * Post-Condition:
+ *      copy data from 'va' to 'dev' with length 'len'
+ *      Return 0 on success, < 0 on error
+ *      
+ * Hint: Use ummapped segment in kernel address space to perform MMIO.
+ *	 Data can cross pages.
+ */
+int sys_write_dev(int sysno, u_int va, u_int dev, u_int len)
+{
+        // Your code here
+}
+
+/* Overview:
+ * 	This function is used to read data from device, which is
+ * 	represented by its mapped physical address.
+ * 
+ * Pre-Condition:
+ *      'va' is the startting address of data buffer, 'len' is the
+ *      length of data (in bytes), 'dev' is the physical address of
+ *      the device
+ * 
+ * Post-Condition:
+ *      copy data from 'dev' to 'va' with length 'len'
+ *      Return 0 on success, < 0 on error
+ *      
+ * Hint: Use ummapped segment in kernel address space to perform MMIO.
+ *	 Data can cross pages.
+ */
+int sys_read_dev(int sysno, u_int va, u_int dev, u_int len)
+{
+        // Your code here
+}
