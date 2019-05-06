@@ -223,6 +223,8 @@ env_alloc(struct Env **new, u_int parent_id)
      * especially the sp register,CPU status. */
     	e->env_tf.cp0_status = 0x10001004;
 	e->env_tf.regs[29] = USTACKTOP;
+	e->env_runs = 0;
+	e->env_nop = 0;
 
     /*Step 5: Remove the new Env from Env free list*/
 	LIST_REMOVE(e,env_link);
@@ -452,6 +454,9 @@ void
 env_destroy(struct Env *e)
 {
     /* Hint: free e. */
+	printf("%08x envid\n",e->env_id);
+	printf("%08x pgfault_out\n",e->env_runs);
+	printf("%08x pgfault_cow\n",e->env_nop);
 	if (e->env_status == ENV_RUNNABLE)
 		LIST_REMOVE(e,env_sched_link);
 	env_free(e);
@@ -496,7 +501,7 @@ env_run(struct Env *e)
 
     /*Step 2: Set 'curenv' to the new environment. */
 	curenv = e;
-	curenv->env_runs++;
+	//curenv->env_runs++;
 
     /*Step 3: Use lcontext() to switch to its address space. */
 	lcontext(KADDR(curenv->env_cr3));

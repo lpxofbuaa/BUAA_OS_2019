@@ -65,6 +65,9 @@ nop
 	jalr	t1
 
 nop
+	lw	a0,TF_EPC(sp)
+	jal	pgfault_count
+	nop
 	// push trap-time eip, eflags onto trap-time stack
 	//	(your code here)
 	//addu	sp,16
