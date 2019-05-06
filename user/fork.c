@@ -226,6 +226,52 @@ fork(void)
 	return newenvid;
 }
 
+int 
+tfork(void) 
+{
+	u_int newenvid;
+	extern struct Env *envs;
+	extern struct Env *env;
+	u_int i;
+	u_int pn;
+	u_int j;
+	
+
+	set_pgfault_handler(pgfault);
+	newenvid = syscall_env_alloc();
+	if (newenvid == 0) {
+		env = &envs[ENVX(syscall_getenvid())];
+		return 0;
+	}
+	if (newenvid != 0) {
+		for (i = 0; i <=PDX(USTACKTOP); i++) {
+			if ((*vpd)[i]&PTE_V) {
+				pn = i*1024;
+				for (j = 0; j < 1024; j++) {
+					if (((pn + j)*BY2PG) >= (USTACKTOP))
+						break;
+					if ((*vpt)[pn+j]&PTE_V) {
+						if (((*vpt)[pn+j]&PTE_R)&&((pn+j)*BY2PG < (USTACKTOP-BY2PG))) {
+							if ((*vpt)[pn+j]&PTE_COW) {
+								pgfault((pn+j)*BY2PG);
+							}
+							(*vpt)[pn+j]|=PTE_LIBRARY;
+						}
+						duppage(newenvid,pn+j);
+					}
+				}
+			}
+		}
+		if ((i = syscall_mem_alloc(newenvid,UXSTACKTOP - BY2PG,PTE_V|PTE_R)) < 0)
+			return i;
+		if ((i = syscall_set_pgfault_handler(newenvid,__asm_pgfault_handler,UXSTACKTOP)) < 0)
+			return i;
+		if ((i = syscall_set_env_status(newenvid,ENV_RUNNABLE)) < 0)
+			return i; 
+	}
+	return newenvid;
+}
+
 // Challenge!
 int
 sfork(void)
