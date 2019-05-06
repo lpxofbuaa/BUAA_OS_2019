@@ -66,6 +66,7 @@ nop
 
 nop
 	lw	a0,TF_EPC(sp)
+	lw	a0,0(a0)
 	jal	pgfault_count
 	nop
 	// push trap-time eip, eflags onto trap-time stack

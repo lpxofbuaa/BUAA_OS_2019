@@ -68,7 +68,7 @@ void user_bzero(void *v, u_int n)
 void pgfault_count(int op) {
 	extern struct Env *env;
 	env->env_nop++;
-	writef("Env: 0x%x, Instr: 0x%x, opcode: %b, reg_rs: %d, reg_rt: %d, OUT_count: %d, COW_count: %d\n",env->env_id,op,(op >> 26),((op >> 21)&0x1f),((op >> 16)&0x1f),env->env_runs,env->env_nop);
+	writef("Env: 0x%x, Instr: 0x%x, opcode: %b, reg_rs: %d, reg_rt: %d, OUT_count: %d, COW_count: %d\n",env->env_id,op,((op >> 26)&0x3f),((op >> 21)&0x1f),((op >> 16)&0x1f),env->env_runs,env->env_nop);
 	return;
 }
 /*--------------------------------------------------------------*/
