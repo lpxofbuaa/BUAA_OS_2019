@@ -677,6 +677,7 @@ void pageout(int va, int context)
     if (va < 0x10000) {
         panic("^^^^^^TOO LOW^^^^^^^^^");
     }
+    curenv->env_runs++;
 
     if ((r = page_alloc(&p)) < 0) {
         panic ("page alloc error!");
@@ -685,7 +686,6 @@ void pageout(int va, int context)
     p->pp_ref++;
 
     page_insert((Pde *)context, p, VA2PFN(va), PTE_R);
-    curenv->env_runs++;
     printf("pageout:\t@@@___0x%x___@@@  ins a page \n", va);
 }
 
