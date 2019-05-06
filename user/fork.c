@@ -252,10 +252,10 @@ tfork(void)
 						break;
 					if ((*vpt)[pn+j]&PTE_V) {
 						if (((*vpt)[pn+j]&PTE_R)&&((pn+j)*BY2PG < (USTACKTOP-BY2PG))) {
-							/*if ((*vpt)[pn+j]&PTE_COW) {
+							if ((*vpt)[pn+j]&PTE_COW) {
 								pgfault((pn+j)*BY2PG);
-							}*/
-							(*vpt)[pn+j]|=PTE_LIBRARY;
+							}
+							(*vpt)[pn+j]= ((*vpt)[pn+j]&(~PTE_COW))|PTE_LIBRARY;
 						}
 						duppage(newenvid,pn+j);
 					}
