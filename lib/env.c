@@ -454,9 +454,6 @@ void
 env_destroy(struct Env *e)
 {
     /* Hint: free e. */
-	printf("%08x envid\n",e->env_id);
-	printf("%08x pgfault_out\n",e->env_runs);
-	printf("%08x pgfault_cow\n",e->env_nop);
 	if (e->env_status == ENV_RUNNABLE)
 		LIST_REMOVE(e,env_sched_link);
 	env_free(e);
@@ -469,6 +466,9 @@ env_destroy(struct Env *e)
 			  (void *)TIMESTACK - sizeof(struct Trapframe),
 			  sizeof(struct Trapframe));
 		printf("i am killed ... \n");
+		printf("%08x envid\n",e->env_id);
+		printf("%08x pgfault_out\n",e->env_runs);
+		printf("%08x pgfault_cow\n",e->env_nop);
 		sched_yield();
 	}
 }
