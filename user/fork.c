@@ -132,12 +132,12 @@ duppage(u_int envid, u_int pn)
 	if (((*vpt)[pn]&PTE_R)) {
 		if ((*vpt)[pn]&PTE_LIBRARY) {
 			//writef("to1\n");
-			r = syscall_mem_map(0,addr,envid,addr,perm|PTE_V|PTE_R|PTE_LIBRARY);
+			r = syscall_mem_map(0,addr,envid,addr,(perm|PTE_V|PTE_R|PTE_LIBRARY)&(~PTE_COW));
 			//writef("1\n");
 			if (r < 0)
 				return;	
 			//writef("to2\n");
-			r = syscall_mem_map(0,addr,0,addr,perm|PTE_V|PTE_R|PTE_LIBRARY);
+			r = syscall_mem_map(0,addr,0,addr,(perm|PTE_V|PTE_R|PTE_LIBRARY)&(~PTE_COW));
 			//writef("2\n");
 			if (r < 0)
 				return;		

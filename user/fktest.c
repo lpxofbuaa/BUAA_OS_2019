@@ -3,23 +3,24 @@
 
 void umain()
 {
+	extern int global_a;
 	int a = 0;
 	int id = 0;
 
-	if ((id = tfork()) == 0) {
+	if ((id = fork()) == 0) {
 		if ((id = tfork()) == 0) {
-			a += 3;
+			global_a += 3;
 
 			for (;;) {
-				writef("\t\tthis is child2 :a:%d\n", a);
+				writef("\t\tthis is child2 :a:%d\n", global_a);
 				for (;;) {}
 			}
 		}
 
-		a += 2;
+		global_a += 2;
 
 		for (;;) {
-			writef("\tthis is child :a:%d\n", a);
+			writef("\tthis is child :a:%d\n", global_a);
 			for (;;) {
 				/*if ((a!=2)&(a!=100)) {
 					a = 100;
@@ -29,10 +30,10 @@ void umain()
 		}
 	}
 
-	a++;
+	global_a++;
 
 	for (;;) {
-		writef("this is father: a:%d\n", a);
+		writef("this is father: a:%d\n", global_a);
 		for (;;) {}
 	}
 }
