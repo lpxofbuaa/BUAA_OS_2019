@@ -188,7 +188,7 @@ fork(void)
 
 
 	//The parent installs pgfault using set_pgfault_handler
-
+	//writef("vpt is 0x%x\n",vpt);
 	//alloc a new alloc
 	set_pgfault_handler(pgfault);	
 	newenvid = syscall_env_alloc();
