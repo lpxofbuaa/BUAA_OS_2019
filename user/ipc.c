@@ -37,6 +37,7 @@ ipc_recv(u_int *whom, u_int dstva, u_int *perm)
 {
 	//printf("ipc_recv:come 0\n");
 	syscall_ipc_recv(dstva);
+	env = &envs[ENVX(syscall_getenvid())];
 
 	if (whom) {
 		*whom = env->env_ipc_from;
