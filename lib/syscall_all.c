@@ -425,6 +425,14 @@ int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
 int sys_write_dev(int sysno, u_int va, u_int dev, u_int len)
 {
         // Your code here
+	struct Page *pp;
+	Pte *ppte;
+	pp = page_lookup(curenv->env_pgdir,va,&ppte);
+	if (pp == 0) 
+		return -E_INVAL;
+	bcopy((void*)(page2kva(pp)),(void*)(0xa0000000 + dev),len);
+	return 0;
+
 }
 
 /* Overview:
@@ -446,4 +454,13 @@ int sys_write_dev(int sysno, u_int va, u_int dev, u_int len)
 int sys_read_dev(int sysno, u_int va, u_int dev, u_int len)
 {
         // Your code here
+	struct Page *pp;
+	Pte *ppte;
+	pp = page_lookup(curenv->env_pgdir,va,&ppte);
+	if (pp == 0)
+		return -E_INVAL;
+	if (!(*ppte&PTE_R))
+		return -E_INVAL;
+	bcopy((void*)(0xa0000000 + dev),(void*)(page2kva(pp)),len);
+	return 0;
 }

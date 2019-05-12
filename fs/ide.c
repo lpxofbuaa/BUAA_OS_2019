@@ -27,9 +27,24 @@ ide_read(u_int diskno, u_int secno, void *dst, u_int nsecs)
 	// 0x200: the size of a sector: 512 bytes.
 	int offset_begin = secno * 0x200;
 	int offset_end = offset_begin + nsecs * 0x200;
-	int offset = 0;
+	int offset = offset_begin;
+	u_int tmp = 0;
 
-	while (offset_begin + offset < offset_end) {
+	while (offset < offset_end) {
+		if (syscall_write_dev(&diskno,0x13000010,4))
+			user_panic("panic at ide_read^^^can not set diskno");
+		if (syscall_write_dev(&offset,0x13000000,4))
+			user_panic("panic at ide_read^^^can not set offset");
+		if (syscall_write_dev(&tmp,0x13000020,1))
+			user_panic("panic at ide_read^^^can not set begin");
+		tmp = 0;
+		if (syscall_read_dev(&tmp,0x13000030,4))
+			user_panic("panic at ide_read^^^can not get result");
+		if (tmp)
+			user_panic("panic at ide_read^^^read fail");
+		if (syscall_read_dev(dst + offset - offset_begin,0x13004000,0x200))
+			user_panic("panic at ide_read^^^copy buff fail");
+		offset += 0x200;
             // Your code here
             // error occurred, then panic.
 	}
@@ -53,13 +68,27 @@ void
 ide_write(u_int diskno, u_int secno, void *src, u_int nsecs)
 {
         // Your code here
-	int offset_begin = ;
-	int offset_end = ;
-	int offset = ;
+	int offset_begin = secno * 0x200;
+	int offset_end = offset_begin + nsecs * 0x200;
+	int offset = offset_begin;
+	u_int tmp = 0;
 	writef("diskno: %d\n", diskno);
-	while ( < ) {
+	while (offset < offset_end) {
 	    // copy data from source array to disk buffer.
-
+		if (syscall_write_dev(src + offset - offset_begin,0x13004000,0x200))
+			user_panic("panic at ide_write^^^copy to buff fail");
+		if (syscall_write_dev(&diskno,0x13000010,4))
+			user_panic("panic at ide_write^^^can not set diskno");
+		if (syscall_write_dev(&offset,0x13000000,4))
+			user_panic("panic at ide_write^^^can not set offset");
+		tmp = 1;
+		if (syscall_write_dev(&tmp,0x13000020,1))
+			user_panic("panic at ide_write^^^can not set begin");
+		if (syscall_read_dev(&tmp,0x13000030,4))
+			user_panic("panic at ide_write^^^can not get result");
+		if (tmp)
+			user_panic("panic at ide_write^^^read fail");
+		offset += 0x200;
             // if error occur, then panic.
 	}
 }

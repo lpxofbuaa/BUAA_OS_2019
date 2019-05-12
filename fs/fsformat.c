@@ -205,6 +205,20 @@ struct File *create_file(struct File *dirf) {
     int nblk = dirf->f_size / BY2BLK;
     
     // Your code here
+	if (nblk == 0)
+		return (struct File *)(disk[make_link_block(dirf,0)].data);
+	if (nblk <= NDIRECT)
+		bno = dirf->f_direct[nblk - 1];
+	else
+		bno = ((uint32_t *)(disk[dirf->f_indirect].data))[nblk - 1];
+
+	dirblk = (struct File*)(disk[bno].data);
+	for (i = 0; i < FILE2BLK; ++i) {
+		if (dirblk[i].f_name[0] == '\0')
+			return &dirblk[i];
+	}
+
+	return (struct File*)(disk[make_link_block(dirf,nblk)].data);
 }
 
 // Write file to disk under specified dir.
