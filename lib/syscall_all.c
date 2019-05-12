@@ -432,7 +432,7 @@ int sys_write_dev(int sysno, u_int va, u_int dev, u_int len)
 	pp = page_lookup(curenv->env_pgdir,va,&ppte);
 	if (pp == 0) 
 		return -E_INVAL;
-	bcopy((void*)(page2kva(pp)),(void*)(0xa0000000 + dev),len);
+	bcopy((void*)va,(void*)(0xa0000000 + dev),len);
 	return 0;
 
 }
@@ -465,6 +465,6 @@ int sys_read_dev(int sysno, u_int va, u_int dev, u_int len)
 		return -E_INVAL;
 	if (!(*ppte&PTE_R))
 		return -E_INVAL;
-	bcopy((void*)(0xa0000000 + dev),(void*)(page2kva(pp)),len);
+	bcopy((void*)(0xa0000000 + dev),(void*)(va),len);
 	return 0;
 }
