@@ -4,6 +4,8 @@
 #include <mmu.h>
 #include <env.h>
 
+extern u_int getrealsp();
+
 
 /* ----------------- help functions ---------------- */
 
@@ -235,6 +237,7 @@ tfork(void)
 	u_int i;
 	u_int pn;
 	u_int j;
+	u_int sp = getrealsp();
 	
 
 	set_pgfault_handler(pgfault);
@@ -251,7 +254,7 @@ tfork(void)
 					if (((pn + j)*BY2PG) >= (USTACKTOP))
 						break;
 					if ((*vpt)[pn+j]&PTE_V) {
-						if (((*vpt)[pn+j]&PTE_R)&&((pn+j)*BY2PG < (USTACKTOP-BY2PG))) {
+						if (((*vpt)[pn+j]&PTE_R)&&((pn+j)*BY2PG < (ROUNDDOWN(sp,BY2PG)))) {
 							if ((*vpt)[pn+j]&PTE_COW) {
 								//writef("here!\n");
 								pgfault((pn+j)*BY2PG);
