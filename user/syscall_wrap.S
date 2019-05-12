@@ -10,3 +10,9 @@ LEAF(msyscall)
 	nop
 END(msyscall)
 
+LEAF(getrealsp)
+	move v0, sp
+	jr ra
+	nop
+END(getrealsp)
+

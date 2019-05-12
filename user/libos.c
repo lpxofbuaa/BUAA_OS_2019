@@ -11,7 +11,7 @@ exit(void)
 
 
 struct Env *env;
-//int global_a;
+int global_a;
 
 void
 libmain(int argc, char **argv)
