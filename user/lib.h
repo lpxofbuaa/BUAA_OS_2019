@@ -20,6 +20,9 @@ extern struct Env *env;
 #include <stdarg.h>
 //#define		LP_MAX_BUF	80
 
+char ugetc();
+void uwritef(char *fmt, ...);
+
 void user_lp_Print(void (*output)(void *, const char *, int),
 				   void *arg,
 				   const char *fmt,
