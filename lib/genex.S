@@ -65,20 +65,12 @@ nop
 andi 	t1, t0, STATUSF_IP2
 beq	t1, zero, toreturn
 nop
-li t1, 0xffffefff
-mfc0	t2, CP0_STATUS
-and	t2, t2, t1
-mtc0	t2, CP0_STATUS
-li t0, 0x90000000
+li t0, 0xb0000000
 lbu	a0, 0(t0)
 lw	a1, TF_STATUS(sp)
 jal	handle_cons_ir
 nop
 nop
-li	t1, 0x00001000
-mfc0	t2, CP0_STATUS
-or	t2, t2, t1
-mtc0	t2, CP0_STATUS
 j 	ret_from_exception
 nop
 toreturn:
