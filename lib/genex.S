@@ -32,7 +32,6 @@ nop
 FEXPORT(ret_from_exception)
 	.set noat
 	.set noreorder
-	STI
 	RESTORE_SOME
 	.set at
 	lw	k0,TF_EPC(sp)				 
@@ -67,7 +66,7 @@ andi 	t1, t0, STATUSF_IP2
 beq	t1, zero, toreturn
 nop
 li t0, 0x90000000
-lb	a0, 0(t0)
+lbu	a0, 0(t0)
 lw	a1, TF_STATUS(sp)
 jal	handle_cons_ir
 nop
