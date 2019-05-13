@@ -67,7 +67,7 @@ beq	t1, zero, toreturn
 nop
 li t0, 0x90000000
 lb	a0, 0(t0)
-mfc0	a1, CP0_STATUS
+lw	a1, TF_STATUS(sp)
 jal	handle_cons_ir
 nop
 nop
