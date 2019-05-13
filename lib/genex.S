@@ -32,6 +32,7 @@ nop
 FEXPORT(ret_from_exception)
 	.set noat
 	.set noreorder
+	STI
 	RESTORE_SOME
 	.set at
 	lw	k0,TF_EPC(sp)				 
