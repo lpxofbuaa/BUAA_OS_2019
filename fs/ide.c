@@ -35,12 +35,12 @@ ide_read(u_int diskno, u_int secno, void *dst, u_int nsecs)
 			user_panic("panic at ide_read^^^can not set diskno");
 		if (syscall_write_dev(&offset,0x13000000,4))
 			user_panic("panic at ide_read^^^can not set offset");
+		tmp = 0;
 		if (syscall_write_dev(&tmp,0x13000020,1))
 			user_panic("panic at ide_read^^^can not set begin");
-		tmp = 0;
 		if (syscall_read_dev(&tmp,0x13000030,4))
 			user_panic("panic at ide_read^^^can not get result");
-		if (tmp)
+		if (!tmp)
 			user_panic("panic at ide_read^^^read fail");
 		if (syscall_read_dev(dst + offset - offset_begin,0x13004000,0x200))
 			user_panic("panic at ide_read^^^copy buff fail");
@@ -86,7 +86,7 @@ ide_write(u_int diskno, u_int secno, void *src, u_int nsecs)
 			user_panic("panic at ide_write^^^can not set begin");
 		if (syscall_read_dev(&tmp,0x13000030,4))
 			user_panic("panic at ide_write^^^can not get result");
-		if (tmp)
+		if (!tmp)
 			user_panic("panic at ide_write^^^read fail");
 		offset += 0x200;
             // if error occur, then panic.
