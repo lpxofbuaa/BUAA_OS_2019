@@ -539,7 +539,7 @@ dir_lookup(struct File *dir, char *name, struct File **file)
 	struct File *f;
 
 	// Step 1: Calculate nblock: how many blocks this dir have.
-	nblock = dir->f_size / BY2BLK;
+	nblock = ROUND(dir->f_size,BY2BLK) / BY2BLK;
 
 	for (i = 0; i < nblock; ++i) {
 		// Step 2: Read the i'th block of the dir.
@@ -553,6 +553,7 @@ dir_lookup(struct File *dir, char *name, struct File **file)
 		j = 0;
 		while (f[j].f_name[0] != '\0') {
 			if (strcmp(f[j].f_name,name) == 0) {
+				f[j].f_dir = dir;
 				*file = &f[j];
 				return 0;
 			}
