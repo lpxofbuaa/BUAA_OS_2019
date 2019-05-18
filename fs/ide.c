@@ -28,7 +28,8 @@ ide_read(u_int diskno, u_int secno, void *dst, u_int nsecs)
 	int offset_begin = secno * 0x200;
 	int offset_end = offset_begin + nsecs * 0x200;
 	int offset = offset_begin;
-	u_int tmp = 0;
+	char tmp = 0;
+	u_int result;
 
 	while (offset < offset_end) {
 		if (syscall_write_dev(&diskno,0x13000010,4))
@@ -38,9 +39,9 @@ ide_read(u_int diskno, u_int secno, void *dst, u_int nsecs)
 		tmp = 0;
 		if (syscall_write_dev(&tmp,0x13000020,1))
 			user_panic("panic at ide_read^^^can not set begin");
-		if (syscall_read_dev(&tmp,0x13000030,4))
+		if (syscall_read_dev(&result,0x13000030,4))
 			user_panic("panic at ide_read^^^can not get result");
-		if (!tmp)
+		if (result == 0)
 			user_panic("panic at ide_read^^^read fail");
 		if (syscall_read_dev(dst + offset - offset_begin,0x13004000,0x200))
 			user_panic("panic at ide_read^^^copy buff fail");
@@ -71,7 +72,8 @@ ide_write(u_int diskno, u_int secno, void *src, u_int nsecs)
 	int offset_begin = secno * 0x200;
 	int offset_end = offset_begin + nsecs * 0x200;
 	int offset = offset_begin;
-	u_int tmp = 0;
+	char tmp = 0;
+	u_int result;
 	writef("diskno: %d\n", diskno);
 	while (offset < offset_end) {
 	    // copy data from source array to disk buffer.
@@ -84,9 +86,9 @@ ide_write(u_int diskno, u_int secno, void *src, u_int nsecs)
 		tmp = 1;
 		if (syscall_write_dev(&tmp,0x13000020,1))
 			user_panic("panic at ide_write^^^can not set begin");
-		if (syscall_read_dev(&tmp,0x13000030,4))
+		if (syscall_read_dev(&result,0x13000030,4))
 			user_panic("panic at ide_write^^^can not get result");
-		if (!tmp)
+		if (result == 0)
 			user_panic("panic at ide_write^^^read fail");
 		offset += 0x200;
             // if error occur, then panic.
