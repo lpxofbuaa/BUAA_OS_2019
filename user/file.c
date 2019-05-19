@@ -42,7 +42,7 @@ open(const char *path, int mode)
 
 	// Step 2: Get the file descriptor of the file to open.
 	if (r = fsipc_open(path,mode,fd)) {
-		writef("cannot open the file.\n");
+		//writef("cannot open the file.\n");
 		return r;	
 	}
 
