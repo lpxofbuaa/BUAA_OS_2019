@@ -365,6 +365,8 @@ check_write_block(void)
 void
 fs_init(void)
 {
+	//u_int a = FILE2BLK;
+	//writef("FILE2BLK is %d\n",a);
 	read_super();
 	check_write_block();
 	read_bitmap();
@@ -550,14 +552,12 @@ dir_lookup(struct File *dir, char *name, struct File **file)
 		// Step 3: Find target file by file name in all files on this block.
 		// If we find the target file, set the result to *file and set f_dir field.		 
 		f = (struct File *)blk;
-		j = 0;
-		while (f[j].f_name[0] != '\0') {
+		for (j = 0; j < FILE2BLK; ++j) {
 			if (strcmp(f[j].f_name,name) == 0) {
 				f[j].f_dir = dir;
 				*file = &f[j];
 				return 0;
 			}
-			j++;
 		}
 		
 	}
