@@ -10,7 +10,7 @@ void umain()
         char buf[512];
         int n;
 
-        if ((r = open("/newmotd", O_RDWR)) < 0) {
+        if ((r = open("/a.lnk", O_RDWR)) < 0) {
                 user_panic("open /newmotd: %d", r);
         }
         fdnum = r;

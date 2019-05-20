@@ -65,6 +65,13 @@ open(const char *path, int mode)
 	if (ffd->f_file.f_type == FTYPE_SYML) {
 		file_read(fd,buf,MAXPATHLEN,0);
 		file_close(fd);
+		i = 0;
+		while (buf[i] != '\n' && buf[i] != '\r' && buf[i] != '\0') {
+			++i;
+		}
+		if (buf[i] != '\0')
+			buf[i] = '\0';
+		//writef("filename is %send\n",buf);
 		return open(buf,mode);
 	}
 
