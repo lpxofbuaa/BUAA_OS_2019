@@ -227,6 +227,7 @@ void write_file(struct File *dirf, const char *path) {
     uint8_t buffer[n+1], *dist;
     struct File *target = create_file(dirf);
     int fd = open(path, O_RDONLY);
+	int i = 0;
     
     // Get file name with no path prefix.
     const char *fname = strrchr(path, '/');
@@ -235,9 +236,19 @@ void write_file(struct File *dirf, const char *path) {
     else
         fname = path;
     strcpy(target->f_name, fname);
+	while(fname[i] != '.' && fname[i] != '\0')
+		++i;
+	if (fname[i] == '.' && (i+3 < strlen(fname))) {
+		if (strcmp("lnk",fname+i+1) == 0) {
+			target->f_type = FTYPE_SYML;
+		} else {
+			target->f_type = FTYPE_REG;
+		}
+	} else {
+		target->f_type = FTYPE_REG;
+	}
     
     target->f_size = lseek(fd, 0, SEEK_END);
-    target->f_type = FTYPE_REG;
     
     // Start reading file.
     lseek(fd, 0, SEEK_SET);

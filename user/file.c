@@ -33,6 +33,7 @@ open(const char *path, int mode)
 	int r;
 	u_int va;
 	u_int i;
+	char *buf;
 
 	// Step 1: Alloc a new Fd, return error code when fail to alloc.
 	// Hint: Please use fd_alloc.
@@ -59,6 +60,12 @@ open(const char *path, int mode)
 			writef("cannot map the file.\n");
 			return r;
 		}
+	}
+	
+	if (ffd->f_file.f_type == FTYPE_SYML) {
+		file_read(fd,buf,MAXPATHLEN,0);
+		file_close(fd);
+		return open(buf,mode);
 	}
 
 	// Step 5: Return file descriptor.
