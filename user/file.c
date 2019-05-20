@@ -72,7 +72,7 @@ int
 get_checksum(const char *path) {
 	struct Fd *fd;
 	struct Filefd *ffd;
-	u_char *va;
+	char *va;
 	u_int size;
 	u_int fileid;
 	int r;
@@ -99,7 +99,11 @@ get_checksum(const char *path) {
 		}
 		blocksum = 0;
 		for (j = 0; j < BY2PG; ++j) {
-			blocksum += *(va+i+j);
+			if (i + j >= size) {
+				blocksum += 0;
+			} else {
+				blocksum += (char)*(va+i+j);
+			}
 		}
 		sum ^= ~blocksum;
 	}
