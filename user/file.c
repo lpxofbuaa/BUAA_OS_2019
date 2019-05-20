@@ -79,7 +79,7 @@ get_checksum(const char *path) {
 	int i;
 	int j;
 	u_char blocksum;
-	u_char sum = 0;
+	int sum = 0;
 
 	if (r = fd_alloc(&fd) < 0)
 		return r;
@@ -101,7 +101,7 @@ get_checksum(const char *path) {
 		for (j = 0; j < BY2PG; ++j) {
 			blocksum += *(va+i+j);
 		}
-		sum += ~blocksum;
+		sum ^= ~blocksum;
 	}
 	ffd->f_file.f_checksum = (int)sum;
 
