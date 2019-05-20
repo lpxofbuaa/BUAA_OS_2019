@@ -68,6 +68,48 @@ open(const char *path, int mode)
 	
 }
 
+int
+get_checksum(const char *path) {
+	struct Fd *fd;
+	struct Filefd *ffd;
+	u_int *va;
+	u_int size;
+	u_int fileid;
+	int r;
+	int i;
+	int j;
+	u_char blocksum;
+	int sum = 0;
+
+	if (r = fd_alloc(&fd) < 0)
+		return r;
+	
+	if (r = fsipc_open(path,O_RDONLY,fd) < 0)
+		return r;
+
+	ffd = (struct Filefd*)fd;
+	va = fd2data(fd);
+	fileid = ffd->f_fileid;
+	size = ffd->f_file.f_size;
+
+	for (i = 0; i < size; i += BY2PG) {
+		if (r = fsipc_map(fileid,i,va+i)) {
+			writef("cannot map the file.\n");
+			return r;
+		}
+		blocksum = 0;
+		for (j = 0; j < BY2PG; ++j) {
+			blocksum += *(va+i+j);
+		}
+		sum += ~blocksum;
+	}
+	ffd->f_file.f_checksum = sum;
+
+	return fd2num(fd);
+
+	 
+}
+
 // Overview:
 //	Close a file descriptor
 int
