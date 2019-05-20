@@ -33,7 +33,7 @@ open(const char *path, int mode)
 	int r;
 	u_int va;
 	u_int i;
-	char *buf;
+	char buf[MAXPATHLEN];
 
 	// Step 1: Alloc a new Fd, return error code when fail to alloc.
 	// Hint: Please use fd_alloc.

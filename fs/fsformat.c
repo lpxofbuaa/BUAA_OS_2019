@@ -238,7 +238,7 @@ void write_file(struct File *dirf, const char *path) {
     strcpy(target->f_name, fname);
 	while(fname[i] != '.' && fname[i] != '\0')
 		++i;
-	if (fname[i] == '.' && (i+3 < strlen(fname))) {
+	if (fname[i] == '.') {
 		if (strcmp("lnk",fname+i+1) == 0) {
 			target->f_type = FTYPE_SYML;
 		} else {
