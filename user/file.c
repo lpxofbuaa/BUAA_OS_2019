@@ -72,7 +72,7 @@ int
 get_checksum(const char *path) {
 	struct Fd *fd;
 	struct Filefd *ffd;
-	u_int *va;
+	u_char *va;
 	u_int size;
 	u_int fileid;
 	int r;
