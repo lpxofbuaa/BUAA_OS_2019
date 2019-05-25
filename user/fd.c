@@ -119,9 +119,10 @@ close(int fdnum)
 		||  (r = dev_lookup(fd->fd_dev_id, &dev)) < 0) {
 		return r;
 	}
-
-	r = (*dev->dev_close)(fd);
+	
 	fd_close(fd);
+	r = (*dev->dev_close)(fd);
+	//fd_close(fd);
 	return r;
 }
 
@@ -151,10 +152,10 @@ dup(int oldfdnum, int newfdnum)
 	ova = fd2data(oldfd);
 	nva = fd2data(newfd);
 
-	if ((r = syscall_mem_map(0, (u_int)oldfd, 0, (u_int)newfd,
-							 ((*vpt)[VPN(oldfd)]) & (PTE_V | PTE_R | PTE_LIBRARY))) < 0) {
-		goto err;
-	}
+	//if ((r = syscall_mem_map(0, (u_int)oldfd, 0, (u_int)newfd,
+	//						 ((*vpt)[VPN(oldfd)]) & (PTE_V | PTE_R | PTE_LIBRARY))) < 0) {
+	//	goto err;
+	//}
 
 	if ((* vpd)[PDX(ova)]) {
 		for (i = 0; i < PDMAP; i += BY2PG) {
@@ -170,14 +171,20 @@ dup(int oldfdnum, int newfdnum)
 		}
 	}
 
+	if ((r = syscall_mem_map(0, (u_int)oldfd, 0, (u_int)newfd,
+							 ((*vpt)[VPT(oldfd)]) & (PTE_V | PTE_R | PTE_LIBRARY))) < 0) {
+		goto err;
+	}
+
 	return newfdnum;
 
 err:
-	syscall_mem_unmap(0, (u_int)newfd);
+	//syscall_mem_unmap(0, (u_int)newfd);
 
 	for (i = 0; i < PDMAP; i += BY2PG) {
 		syscall_mem_unmap(0, nva + i);
 	}
+	syscall_mem_unmap(0, (u_int)newfd);
 
 	return r;
 }

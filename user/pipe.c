@@ -85,11 +85,21 @@ _pipeisclosed(struct Fd *fd, struct Pipe *p)
 	// everybody left is what fd is.  So the other end of
 	// the pipe is closed.
 	int pfd,pfp,runs;
+	extern struct Env *env;
 	
+	runs = env->env_runs;
+	pfd = pageref(fd);
+	pfp = pageref(p);
 
+	if (pfd == pfp) {
+		if (runs != env->env_runs) {
+			return _pipeisclosed(fd,p);
+		}
+		return 1;
+	}
 
-
-	user_panic("_pipeisclosed not implemented");
+	return 0;
+	//user_panic("_pipeisclosed not implemented");
 //	return 0;
 }
 
@@ -117,13 +127,34 @@ piperead(struct Fd *fd, void *vbuf, u_int n, u_int offset)
 	// some bytes, return what you have instead of yielding.)
 	// If the pipe is empty and closed and you didn't copy any data out, return 0.
 	// Use _pipeisclosed to check whether the pipe is closed.
-	int i;
+	int i = 0;
 	struct Pipe *p;
 	char *rbuf;
 	
+	p = (struct Pipe*)fd2data(fd);
+	rbuf = p->p_buf;
+
+	while (i < n) {
+		if (p->p_rpos < p->p_wpos) {
+			((char *)vbuf)[i] = rbuf[p->p_rpos%BY2PIPE];
+			++i;
+			++(p->p_rpos);
+		} else if (_pipeisclosed(fd,p)) {
+			((char *)vbuf)[i] = '\0';
+			return i;
+		} else if (i == 0) {
+			syscall_yield();
+		} else {
+			((char *)vbuf)[i] = '\0';
+			return i;
+		}
+	}
+
+	((char *)vbuf)[n] = '\0';
+	return n;
 
 
-	user_panic("piperead not implemented");
+	//user_panic("piperead not implemented");
 //	return -E_INVAL;
 }
 
@@ -137,15 +168,30 @@ pipewrite(struct Fd *fd, const void *vbuf, u_int n, u_int offset)
 	// the data, wait for the pipe to empty and then keep copying.
 	// If the pipe is full and closed, return 0.
 	// Use _pipeisclosed to check whether the pipe is closed.
-	int i;
+	int i = 0;
 	struct Pipe *p;
 	char *wbuf;
 	
-
+	p = (struct Pipe *)fd2data(fd);
+	wbuf = p->p_buf;
 //	return -E_INVAL;
 	
+	while (i < n) {
+		if (p->p_wpos - p->p_rpos < BY2PIPE) {
+			if (_pipeisclosed(fd,p)) {
+				return 0;
+			}
+			wbuf[p->p_wpos%BY2PIPE] = ((char *)vbuf)[i];
+			++i;
+			++(p->p_wpos); 
+		} else if (_pipeisclosed(fd,p)) {
+			return 0;
+		} else {
+			syscall_yield();
+		}
+	}
 	
-	user_panic("pipewrite not implemented");
+	//user_panic("pipewrite not implemented");
 
 	return n;
 }

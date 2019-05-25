@@ -263,7 +263,7 @@ static int load_icode_mapper(u_long va, u_int32_t sgsize,
 		if (r < 0) {
 			return r;
 		} 
-		p->pp_ref++;
+		//p->pp_ref++;
 		if (i == 0) {
 			if (BY2PG - offset < bin_size)
 				bcopy(bin,(void *)(page2kva(p) + offset),BY2PG - offset);
@@ -284,7 +284,7 @@ static int load_icode_mapper(u_long va, u_int32_t sgsize,
 		r = page_alloc(&p);
 		if (r < 0)
 			return r;
-		p->pp_ref++;
+		//p->pp_ref++;
 		bcopy(bin + i - offset,(void *)(page2kva(p)),bin_size - (i - offset));
 		r = page_insert(env->env_pgdir,p,va + i,PTE_V|PTE_R);
 		if (r < 0)
@@ -298,7 +298,7 @@ static int load_icode_mapper(u_long va, u_int32_t sgsize,
 		r = page_alloc(&p);
 		if (r < 0)
 			return r;
-		p->pp_ref++;
+		//p->pp_ref++;
 		r = page_insert(env->env_pgdir,p,va + i,PTE_V|PTE_R);
 		if (r < 0)
 			return r;
