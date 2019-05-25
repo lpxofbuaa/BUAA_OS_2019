@@ -26,6 +26,7 @@ int is_elf_format(u_char *binary)
                 return 1;
         }
 
+
         return 0;
 }
 
