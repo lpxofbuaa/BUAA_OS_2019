@@ -46,6 +46,7 @@ int readelf(u_char *binary, int size)
 
         int Nr;
 
+
         Elf32_Shdr *shdr = NULL;
 
         u_char *ptr_sh_table = NULL;
