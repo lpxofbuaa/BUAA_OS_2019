@@ -84,21 +84,21 @@ _pipeisclosed(struct Fd *fd, struct Pipe *p)
 	// to the total number of readers and writers, then
 	// everybody left is what fd is.  So the other end of
 	// the pipe is closed.
-	int pfd,pfp,runs;
+	int pfd,pfp,runs,ret;
 	extern struct Env *env;
+	do {
+		runs = env->env_runs;
+		pfd = pageref(fd);
+		pfp = pageref(p);
 	
-	runs = env->env_runs;
-	pfd = pageref(fd);
-	pfp = pageref(p);
-
-	if (pfd == pfp) {
-		if (runs != env->env_runs) {
-			return _pipeisclosed(fd,p);
+		if (pfd == pfp) {
+			ret = 1;
+		} else {
+			ret = 0;
 		}
-		return 1;
-	}
+	} while (runs != env->env_runs);
 
-	return 0;
+	return ret;
 	//user_panic("_pipeisclosed not implemented");
 //	return 0;
 }
