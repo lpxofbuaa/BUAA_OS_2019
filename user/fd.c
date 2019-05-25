@@ -172,7 +172,7 @@ dup(int oldfdnum, int newfdnum)
 	}
 
 	if ((r = syscall_mem_map(0, (u_int)oldfd, 0, (u_int)newfd,
-							 ((*vpt)[VPT(oldfd)]) & (PTE_V | PTE_R | PTE_LIBRARY))) < 0) {
+							 ((*vpt)[VPN(oldfd)]) & (PTE_V | PTE_R | PTE_LIBRARY))) < 0) {
 		goto err;
 	}
 
