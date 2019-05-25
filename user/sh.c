@@ -104,7 +104,7 @@ again:
 				writef("syntax error: < not followed by word\n");
 				exit();
 			}
-			if (r = open(t,O_RDONLY) < 0) {
+			if ((r = open(t,O_RDONLY)) < 0) {
 				writef("error: can not open file for writing\n");
 				exit();
 			}
@@ -119,7 +119,7 @@ again:
 				writef("syntax error: > not followed by word\n");
 				exit();
 			}
-			if (r = open(t,O_WRONLY) < 0) {
+			if ((r = open(t,O_WRONLY)) < 0) {
 				writef("error: can not open file for reading\n");
 				exit();
 			}
@@ -132,12 +132,12 @@ again:
 		case '|':
 			// Your code here.
 			// 	First, allocate a pipe.
-			if (r = pipe(p) < 0) {
+			if ((r = pipe(p)) < 0) {
 				writef("error: create a pipe fail!\n");
 				exit();
 			}
 			//	Then fork.
-			if (r=fork() < 0) {
+			if ((r=fork()) < 0) {
 				writef("error: fork fail\n");
 				exit();
 			}

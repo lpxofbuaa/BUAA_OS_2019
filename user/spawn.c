@@ -125,7 +125,7 @@ int spawn(char *prog, char **argv)
 	fd = r;
 	// Your code begins here
 	// Before Step 2 , You had better check the "target" spawned is a execute bin 
-	if (r = read(fd,elfbuf,512) < 0) {
+	if ((r = read(fd,elfbuf,512)) < 0) {
 		writef("can not read file\n");
 		return r;
 	}
@@ -134,13 +134,13 @@ int spawn(char *prog, char **argv)
 		return -1;
 	}
 	// Step 2: Allocate an env (Hint: using syscall_env_alloc())
-	if (r = syscall_env_alloc() < 0) {
+	if ((r = syscall_env_alloc()) < 0) {
 		writef("error: can not alloc a new env\n");
 		return r;
 	}
 	child_envid = r;
 	// Step 3: Using init_stack(...) to initialize the stack of the allocated env
-	if (r = init_stack(child_envid,argv,&esp) < 0) {
+	if ((r = init_stack(child_envid,argv,&esp)) < 0) {
 		writef("error: init_stack fail\n");
 		return r;
 	}
