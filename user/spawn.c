@@ -122,10 +122,28 @@ int spawn(char *prog, char **argv)
 		user_panic("spawn ::open line 102 RDONLY wrong !\n");
 		return r;
 	}
+	fd = r;
 	// Your code begins here
 	// Before Step 2 , You had better check the "target" spawned is a execute bin 
+	if (r = read(fd,elfbuf,512) < 0) {
+		writef("can not read file\n");
+		return r;
+	}
+	if (usr_is_elf_format(elfbuf) == 0) {
+		writef("error: not an elf file!\n");
+		return -1;
+	}
 	// Step 2: Allocate an env (Hint: using syscall_env_alloc())
+	if (r = syscall_env_alloc() < 0) {
+		writef("error: can not alloc a new env\n");
+		return r;
+	}
+	child_envid = r;
 	// Step 3: Using init_stack(...) to initialize the stack of the allocated env
+	if (r = init_stack(child_envid,argv,&esp) < 0) {
+		writef("error: init_stack fail\n");
+		return r;
+	}
 	// Step 3: Map file's content to new env's text segment
 	//        Hint 1: what is the offset of the text segment in file? try to use objdump to find out.
 	//        Hint 2: using read_map(...)
@@ -135,6 +153,17 @@ int spawn(char *prog, char **argv)
 	//       the file is opened successfully, and env is allocated successfully.
 	// Note2: You can achieve this func in any way ，remember to ensure the correctness
 	//        Maybe you can review lab3 
+	size = ((struct Filefd*)num2fd(fd))->f_file.f_size;
+	text_start = 0;
+	for (i = 0x1000; i < size; i += BY2PG) {
+		if (r = read_map(fd,i,&blk) < 0) {
+			writef("map fail\n");
+			return r;
+		}
+
+		syscall_mem_map(0,blk,child_envid,UTEXT + text_start, PTE_V|PTE_R);
+		text_start += BY2PG;
+	}
 	// Your code ends here
 
 	struct Trapframe *tf;

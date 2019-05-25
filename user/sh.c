@@ -104,24 +104,54 @@ again:
 				writef("syntax error: < not followed by word\n");
 				exit();
 			}
+			if (r = open(t,O_RDONLY) < 0) {
+				writef("error: can not open file for writing\n");
+				exit();
+			}
+			dup(r,0);
+			close(r);
 			// Your code here -- open t for reading,
 			// dup it onto fd 0, and then close the fd you got.
-			user_panic("< redirection not implemented");
+			//user_panic("< redirection not implemented");
 			break;
 		case '>':
+			if (gettoken(0, &t) != 'w') {
+				writef("syntax error: > not followed by word\n");
+				exit();
+			}
+			if (r = open(t,O_WRONLY) < 0) {
+				writef("error: can not open file for reading\n");
+				exit();
+			}
+			dup(r,1);
+			close(r);
 			// Your code here -- open t for writing,
 			// dup it onto fd 1, and then close the fd you got.
-			user_panic("> redirection not implemented");
+			//user_panic("> redirection not implemented");
 			break;
 		case '|':
 			// Your code here.
 			// 	First, allocate a pipe.
+			if (r = pipe(p) < 0) {
+				writef("error: create a pipe fail!\n");
+				exit();
+			}
 			//	Then fork.
+			if (r=fork() < 0) {
+				writef("error: fork fail\n");
+				exit();
+			}
 			//	the child runs the right side of the pipe:
 			//		dup the read end of the pipe onto 0
 			//		close the read end of the pipe
 			//		close the write end of the pipe
 			//		goto again, to parse the rest of the command line
+			if (r == 0) {
+				dup(p[0],0);
+				close(p[0]);
+				close(p[1]);
+				goto again;
+			}
 			//	the parent runs the left side of the pipe:
 			//		dup the write end of the pipe onto 1
 			//		close the write end of the pipe
@@ -129,6 +159,13 @@ again:
 			//		set "rightpipe" to the child envid
 			//		goto runit, to execute this piece of the pipeline
 			//			and then wait for the right side to finish
+			else {
+				dup(p[1],1);
+				close(p[1]);
+				close(p[0]);
+				rightpipe = r;
+				goto runit;
+			}
 			user_panic("| not implemented");
 			break;
 		}
