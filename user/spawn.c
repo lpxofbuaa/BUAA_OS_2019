@@ -102,6 +102,94 @@ int
 usr_load_elf(int fd , Elf32_Phdr *ph, int child_envid){
 	//Hint: maybe this function is useful 
 	//      If you want to use this func, you should fill it ,it's not hard
+	u_long va = ph->p_vaddr;
+	u_int32_t sgsize = ph->p_memsz;
+	u_int bin_offset = ph->p_offset;
+	u_int32_t bin_size = ph->p_filesz;
+	u_char *bin;
+	u_long offset = va - ROUNDDOWN(va, BY2PG);
+	va = ROUNDDOWN(va,BY2PG);
+	int r,i;
+	r = read_map(fd,bin_offset,&bin);
+	if (r < 0) {
+		writef("usr_load_elf read_map fail\n");
+		return r;
+	}
+	for (i = 0; i < bin_size; i += BY2PG) {
+		r = syscall_mem_alloc(0,TMPPAGE,PTE_V|PTE_R);
+		if (r < 0) {
+			writef("usr_load_elf fail at alloc mem for tmp\n");
+			return r;
+		}
+	/*	r = syscall_mem_alloc(child_envid,va+i,PTE_V|PTE_R);
+		if (r < 0) {
+			writef("usr_load_elf fail at mem_alloc\n");
+			return r;
+		}*/
+		if (i == 0) {
+			if (BY2PG - offset < bin_size)
+				user_bcopy(bin,(void *)(TMPPAGE+offset),BY2PG-offset);
+			else
+				user_bcopy(bin,(void *)(TMPPAGE+offset),bin_size);
+		} else {
+			if (BY2PG + i - offset < bin_size)
+				user_bcopy(bin+i-offset,(void *)(TMPPAGE),BY2PG);
+			else
+				user_bcopy(bin+i-offset,(void *)(TMPPAGE),bin_size - (i - offset));
+		}
+		r = syscall_mem_map(0,TMPPAGE,child_envid,va+i,PTE_V|PTE_R);
+		if (r < 0) {
+			writef("usr_load_elf : map fail\n");
+			return r;
+		}
+	}
+
+	if (i - offset < bin_size) {
+		r = syscall_mem_alloc(0,TMPPAGE,PTE_V|PTE_R);
+		if (r < 0) {
+			writef("usr_load_elf fail at after for alloc mem\n");
+			return r;
+		}
+/*
+		r = syscall_mem_alloc(child_envid,va+i,PTE_V|PTE_R);
+		if (r < 0) {
+			writef("user_load_elf fail at after for\n");
+			return r;
+		}
+*/
+		user_bcopy(bin+i-offset,(void *)(TMPPAGE),bin_size - (i - offset));
+		r = syscall_mem_map(0,TMPPAGE,child_envid,va+i,PTE_V|PTE_R);
+		if (r < 0) {
+			writef("usr_laod_elf fail after for map mem\n");
+			return r;
+		}
+		i += BY2PG;
+	}
+
+	while (i < sgsize) {
+/*
+		r = syscall_mem_alloc(0,TMPPAGE,PTE_V|PTE_R);
+		if (r < 0) {
+			writef("usr_load_elf fail at while\n");
+			return r;
+		}
+*/
+
+		r = syscall_mem_alloc(child_envid,va+i,PTE_V|PTE_R);
+		if (r < 0) {
+			writef("usr_load_elf fail at while\n");
+			return r;
+		}
+/*
+		r = syscall_mem_map(0,TMPPAGE,child_envid,va+i,PTE_V|PTE_R);
+		if (r < 0) {
+			writef("usr_load_elf fail at while mem map\n");
+			return r;
+		}
+*/
+		i += BY2PG;
+	}
+	
 	return 0;
 }
 
@@ -111,7 +199,8 @@ int spawn(char *prog, char **argv)
 	int r;
 	int fd;
 	u_int child_envid;
-	int size, text_start;
+	int size;
+	Elf32_Off text_start;
 	u_int i, *blk;
 	u_int esp;
 	Elf32_Ehdr* elf;
@@ -153,8 +242,24 @@ int spawn(char *prog, char **argv)
 	//       the file is opened successfully, and env is allocated successfully.
 	// Note2: You can achieve this func in any way ，remember to ensure the correctness
 	//        Maybe you can review lab3 
-	size = ((struct Filefd*)num2fd(fd))->f_file.f_size;
-	text_start = 0;
+	elf = (Elf32_Ehdr *)elfbuf;
+	Elf32_Half count = elf->e_phnum;
+	Elf32_Half p_size = elf->e_phentsize;
+	text_start = elf->e_phoff;
+	while (count--) {
+		if ((r = read_map(fd,text_start,&blk)) < 0) {
+			writef("read_map fail\n");
+			return r;
+		} 
+		ph = (Elf32_Phdr *)blk;
+		r = usr_load_elf(fd,ph,child_envid);
+		if (r < 0) {
+			writef("loadelf fail\n");
+			return r;
+		}
+		text_start += p_size;
+	}
+/*
 	for (i = 0x1000; i < size; i += BY2PG) {
 		if (r = read_map(fd,i,&blk) < 0) {
 			writef("map fail\n");
@@ -164,12 +269,14 @@ int spawn(char *prog, char **argv)
 		syscall_mem_map(0,blk,child_envid,UTEXT + text_start, PTE_V|PTE_R);
 		text_start += BY2PG;
 	}
+*/
 	// Your code ends here
 
 	struct Trapframe *tf;
 	writef("\n::::::::::spawn size : %x  sp : %x::::::::\n",size,esp);
 	tf = &(envs[ENVX(child_envid)].env_tf);
-	tf->pc = UTEXT;
+	//tf->pc = UTEXT;
+	tf->pc = elf->e_entry;
 	tf->regs[29]=esp;
 
 

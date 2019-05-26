@@ -114,15 +114,21 @@ close(int fdnum)
 	int r;
 	struct Dev *dev;
 	struct Fd *fd;
+	//writef("before pageref fd0 is %d\n",pageref(0x60000000 - PDMAP));
 
 	if ((r = fd_lookup(fdnum, &fd)) < 0
 		||  (r = dev_lookup(fd->fd_dev_id, &dev)) < 0) {
 		return r;
 	}
 	
-	fd_close(fd);
-	r = (*dev->dev_close)(fd);
 	//fd_close(fd);
+	r = (*dev->dev_close)(fd);
+	fd_close(fd);
+	/*if ((* vpt)[VPN(fd)] == 0) 
+		writef("success!\n");
+	else
+		writef("fail\n");*/
+	//writef("pageref fd is %d\n",pageref(fd));
 	return r;
 }
 

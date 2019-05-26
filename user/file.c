@@ -63,6 +63,9 @@ open(const char *path, int mode)
 
 	// Step 5: Return file descriptor.
 	// Hint: Use fd2num.
+	/*if (fd2num(fd) == 0) {
+		writef("someone open fd0,now pagref of fd0 is %d\n",pageref(fd));
+	}*/
 	return fd2num(fd);
 
 	
