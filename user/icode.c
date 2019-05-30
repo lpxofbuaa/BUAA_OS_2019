@@ -17,11 +17,12 @@ umain(void)
 	}
 
 	writef("icode: close /motd\n");
-//	close(fd);
+	close(fd);
 
 	writef("icode: spawn /init\n");
 	if ((r = spawnl("init.b", "init", "initarg1", "initarg2", (char*)0)) < 0)
 		user_panic("icode: spawn /init: %e", r);
 
 	writef("icode: exiting\n");
+	//close(fd);
 }

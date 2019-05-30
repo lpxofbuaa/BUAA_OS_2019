@@ -121,9 +121,9 @@ close(int fdnum)
 		return r;
 	}
 	
-	//fd_close(fd);
-	r = (*dev->dev_close)(fd);
 	fd_close(fd);
+	r = (*dev->dev_close)(fd);
+	//fd_close(fd);
 	/*if ((* vpt)[VPN(fd)] == 0) 
 		writef("success!\n");
 	else
