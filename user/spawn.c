@@ -115,6 +115,7 @@ usr_load_elf(int fd , Elf32_Phdr *ph, int child_envid){
 		writef("usr_load_elf read_map fail\n");
 		return r;
 	}
+	//writef("all sgsize is %d\n",sgsize/BY2PG);
 	for (i = 0; i < bin_size; i += BY2PG) {
 		r = syscall_mem_alloc(0,TMPPAGE,PTE_V|PTE_R);
 		if (r < 0) {
@@ -189,6 +190,8 @@ usr_load_elf(int fd , Elf32_Phdr *ph, int child_envid){
 */
 		i += BY2PG;
 	}
+
+	//writef("over\n");
 	
 	return 0;
 }
@@ -252,10 +255,12 @@ int spawn(char *prog, char **argv)
 			return r;
 		} 
 		ph = (Elf32_Phdr *)blk;
-		r = usr_load_elf(fd,ph,child_envid);
-		if (r < 0) {
-			writef("loadelf fail\n");
-			return r;
+		if (ph->p_type == PT_LOAD) {
+			r = usr_load_elf(fd,ph,child_envid);
+			if (r < 0) {
+				writef("loadelf fail\n");
+				return r;
+			}
 		}
 		text_start += p_size;
 	}

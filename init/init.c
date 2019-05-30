@@ -23,6 +23,7 @@ void mips_init()
 	//ENV_CREATE(user_fktest);
 	//ENV_CREATE(user_pt1);
 	//ENV_CREATE(user_idle);
+	//ENV_CREATE(user_testptelibrary);
 	//ENV_CREATE(user_testpipe);
 	//ENV_CREATE(user_init);
 	//ENV_CREATE(user_mytest);

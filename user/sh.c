@@ -105,7 +105,7 @@ again:
 				exit();
 			}
 			if ((r = open(t,O_RDONLY)) < 0) {
-				writef("error: can not open file for writing\n");
+				writef("error: can not open file for reading\n");
 				exit();
 			}
 			dup(r,0);
@@ -120,7 +120,7 @@ again:
 				exit();
 			}
 			if ((r = open(t,O_WRONLY)) < 0) {
-				writef("error: can not open file for reading\n");
+				writef("error: can not open file for writing\n");
 				exit();
 			}
 			dup(r,1);
@@ -274,15 +274,15 @@ umain(int argc, char **argv)
 		interactive = iscons(0);
 	for(;;){
 		if (interactive)
-			//fwritef(1, "\n$ ");		
-			writef("\n$ ");
+			fwritef(1, "\n$ ");		
+			//writef("\n$ ");
 		readline(buf, sizeof buf);
 		
 		if (buf[0] == '#')
 			continue;
 		if (echocmds)
-			//fwritef(1, "# %s\n", buf);
-			writef("# %s\n", buf);
+			fwritef(1, "# %s\n", buf);
+			//writef("# %s\n", buf);
 		if ((r = fork()) < 0)
 			user_panic("fork: %e", r);
 		if (r == 0) {

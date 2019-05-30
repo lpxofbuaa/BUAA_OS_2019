@@ -42,30 +42,30 @@ ls1(char *prefix, u_int isdir, u_int size, char *name)
 	char *sep;
 
 	if(flag['l'])
-		//fwritef(1, "%11d %c ", size, isdir ? 'd' : '-');
-		writef("%11d %c ", size, isdir ? 'd' : '-');
+		fwritef(1, "%11d %c ", size, isdir ? 'd' : '-');
+		//writef("%11d %c ", size, isdir ? 'd' : '-');
 	if(prefix) {
 		if (prefix[0] && prefix[strlen(prefix)-1] != '/')
 			sep = "/";
 		else
 			sep = "";
-		//fwritef(1, "%s%s", prefix, sep);
-		writef("%s%s", prefix, sep);
+		fwritef(1, "%s%s", prefix, sep);
+		//writef("%s%s", prefix, sep);
 	}
-	//fwritef(1, "%s", name);
-	writef("%s", name);
+	fwritef(1, "%s", name);
+	//writef("%s", name);
 	if(flag['F'] && isdir)
-		//fwritef(1, "/");
-		writef("/");
-	//fwritef(1, " ");
-	writef(" ");
+		fwritef(1, "/");
+		//writef("/");
+	fwritef(1, " ");
+	//writef(" ");
 }
 
 void
 usage(void)
 {
-	//fwritef(1, "usage: ls [-dFl] [file...]\n");
-	writef("usage: ls [-dFl] [file...]\n");
+	fwritef(1, "usage: ls [-dFl] [file...]\n");
+	//writef("usage: ls [-dFl] [file...]\n");
 	exit();
 }
 
