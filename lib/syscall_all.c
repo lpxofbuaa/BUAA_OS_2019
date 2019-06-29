@@ -108,7 +108,18 @@ int sys_thread_destroy(int sysno, u_int threadid)
 	if ((r = threadid2tcb(threadid,&t)) < 0) {
 		return r;
 	}
-
+	if (t->tcb_status == ENV_FREE) {
+		return -E_INVAL;
+	}
+	//t->tcb_exit_value = 0;
+	struct Tcb *tmp;
+	while (!LIST_EMPTY(&t->tcb_joined_list)) {
+		tmp = LIST_FIRST(&t->tcb_joined_list);
+		LIST_REMOVE(tmp,tcb_joined_link);
+		*(tmp->tcb_join_value_ptr) = t->tcb_exit_ptr;
+		//printf("wake up tcbid is 0x%x\n",tmp->thread_id);
+		sys_set_thread_status(0,tmp->thread_id,ENV_RUNNABLE);
+	}
 	printf("[%08x] destroying tcb %08x\n", curenv->env_id, t->thread_id);
 	thread_destroy(t);
 	return 0;
@@ -478,3 +489,31 @@ int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
 	return 0;
 }
 
+int sys_thread_join(int sysno, u_int threadid, void **value_ptr)
+{
+	struct Tcb *t;
+	int r;
+	//printf("here id is 0x%x\n",threadid);
+	r = threadid2tcb(threadid,&t);
+	//printf("find id is 0x%x\n",t->thread_id);
+	if (r < 0)
+		return r;
+	if (t->tcb_detach) {
+		return -E_THREAD_JOIN_FAIL;
+	}
+	if (t->tcb_status == ENV_FREE) {
+		if (value_ptr != 0) {
+			*value_ptr = t->tcb_exit_ptr;
+		}
+		return 0;
+	}
+	//printf("father id is 0x%x\n",t->thread_id);
+	LIST_INSERT_HEAD(&t->tcb_joined_list,curtcb,tcb_joined_link);
+	curtcb->tcb_join_value_ptr = value_ptr;
+	sys_set_thread_status(0,curtcb->thread_id,ENV_NOT_RUNNABLE);
+	struct Trapframe *trap = (struct Trapframe *)(KERNEL_SP - sizeof(struct Trapframe));
+	trap->regs[2] = 0;
+	trap->pc = trap->cp0_epc;
+	sys_yield();
+	return 0;
+}

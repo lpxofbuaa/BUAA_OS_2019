@@ -7,6 +7,8 @@ exit(void)
 {
 	//close_all();
 	//syscall_env_destroy(0);
+	struct Tcb *t = &env->env_threads[syscall_getthreadid()&0x7];
+	t->tcb_exit_value = 0;
 	syscall_thread_destroy(0);
 }
 

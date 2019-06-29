@@ -75,6 +75,7 @@ int threadid2tcb(u_int threadid, struct Tcb **ptcb) {
 		*ptcb = 0;
 		return -E_BAD_ENV;
 	}
+	*ptcb = t;
 	return 0;
 }
 
@@ -249,7 +250,10 @@ int thread_alloc(struct Env *e, struct Tcb **new) {
 	t->tcb_cancelstate = THREAD_CANNOT_BE_CANCELED;
 	t->tcb_canceltype = THREAD_CANCEL_IMI;
 	t->tcb_canceled = 0;
-	t->tcb_joined_count = 0;
+	t->tcb_exit_value = 0;
+	t->tcb_exit_ptr = (void *)&t->tcb_exit_value;
+	t->tcb_detach = 0;
+	LIST_INIT(&t->tcb_joined_list);
 	*new = t;
 	return 0;
 }

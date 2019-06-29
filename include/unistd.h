@@ -24,5 +24,5 @@
 #define SYS_get_threadid	((__SYSCALL_BASE ) + (16 ))
 #define SYS_thread_alloc	((__SYSCALL_BASE ) + (17 ))
 #define SYS_set_thread_status	((__SYSCALL_BASE ) + (18 ))
-#define SYS_get_tcb		((__SYSCALL_BASE ) + (19 ))
+#define SYS_thread_join		((__SYSCALL_BASE ) + (19 ))
 #endif

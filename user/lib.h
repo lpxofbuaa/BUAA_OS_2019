@@ -139,6 +139,8 @@ int 	pthread_cancel(pthread_t thread);
 int	pthread_setcancelstate(int state, int *oldvalue);
 int	pthread_setcanceltype(int type, int *oldvalue);
 void	pthread_testcancel(void);
+int 	pthread_detach(pthread_t thread);
+int	pthread_join(pthread_t thread, void **value_ptr);
 
 
 

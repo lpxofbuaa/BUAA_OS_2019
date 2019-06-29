@@ -108,4 +108,7 @@ int syscall_set_thread_status(u_int threadid,u_int status)
 	return msyscall(SYS_set_thread_status,threadid,status,0,0,0);
 }
 
-
+int syscall_thread_join(u_int threadid, void **value_ptr) 
+{
+	return msyscall(SYS_thread_join,threadid,value_ptr,0,0,0);
+}

@@ -24,21 +24,27 @@
 #define THREAD_CANCEL_IMI		0
 #define THREAD_CANCEL_POINT		1
 
+#define THREAD_CANCELED_EXIT		99
+
+#define E_THREAD_JOIN_FAIL		16
+
 struct Tcb {
 	struct Trapframe tcb_tf;
 	u_int thread_id;
 	u_int tcb_status;
 	LIST_ENTRY(Tcb) tcb_sched_link;
-	int tcb_joined_count;
-	struct Tcb * tcb_joined_threads[8];
+	LIST_ENTRY(Tcb) tcb_joined_link;
+	LIST_HEAD(Tcb_joined_list,Tcb);
+	struct Tcb_joined_list tcb_joined_list;
 	void **tcb_join_value_ptr;
 	u_int tcb_detach;
 	u_int tcb_pri;
 	void *tcb_exit_ptr;
+	int tcb_exit_value;
 	int tcb_cancelstate;
 	int tcb_canceltype;
 	u_int tcb_canceled;
-	u_int tcb_nop[5];
+	u_int tcb_nop[10];
 };
 
 struct Env {
