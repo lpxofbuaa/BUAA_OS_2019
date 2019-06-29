@@ -11,6 +11,9 @@ extern char boutcode[];
 void mips_init()
 {
 	printf("init.c:\tmips_init() is called\n");
+	printf("env is %d\n",sizeof(struct Env));
+	printf("Tcb is %d\n",sizeof(struct Tcb));
+	printf("Trapframe is %d\n",sizeof(struct Trapframe));
 	mips_detect_memory();
 	
 	mips_vm_init();
@@ -18,8 +21,14 @@ void mips_init()
 	
 	env_init();
 	
-	ENV_CREATE(user_fktest);
+	//ENV_CREATE(user_fktest);
 	//ENV_CREATE(user_pingpong);
+	//ENV_CREATE_PRIORITY(user_a,1);
+	//ENV_CREATE_PRIORITY(user_b,2);
+	//ENV_CREATE(user_helloworld);
+	//ENV_CREATE(user_pttest);
+	//ENV_CREATE(user_ptexittest);
+	//ENV_CREATE(user_ptcanceltest);
 	
     trap_init();
 	kclock_init();

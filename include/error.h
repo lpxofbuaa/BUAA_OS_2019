@@ -21,6 +21,11 @@
 #define E_FILE_EXISTS	11	// File already exists
 #define E_NOT_EXEC	12	// File not a valid executable
 
-#define MAXERROR 12
+#define E_THREAD_MAX	13
+
+#define E_THREAD_NOTFOUND 14
+#define E_THREAD_CANNOTCANCEL 15
+
+#define MAXERROR 15
 
 #endif // _ERROR_H_

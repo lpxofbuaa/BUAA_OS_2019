@@ -12,23 +12,47 @@
 #define NENV		(1<<LOG2NENV)
 #define ENVX(envid)	((envid) & (NENV - 1))
 #define GET_ENV_ASID(envid) (((envid)>> 11)<<6)
+#define THREAD_MAX	8
 
 // Values of env_status in struct Env
 #define ENV_FREE	0
 #define ENV_RUNNABLE		1
 #define ENV_NOT_RUNNABLE	2
 
+#define THREAD_CAN_BE_CANCELED 		1
+#define THREAD_CANNOT_BE_CANCELED	0
+#define THREAD_CANCEL_IMI		0
+#define THREAD_CANCEL_POINT		1
+
+struct Tcb {
+	struct Trapframe tcb_tf;
+	u_int thread_id;
+	u_int tcb_status;
+	LIST_ENTRY(Tcb) tcb_sched_link;
+	int tcb_joined_count;
+	struct Tcb * tcb_joined_threads[8];
+	void **tcb_join_value_ptr;
+	u_int tcb_detach;
+	u_int tcb_pri;
+	void *tcb_exit_ptr;
+	int tcb_cancelstate;
+	int tcb_canceltype;
+	u_int tcb_canceled;
+	u_int tcb_nop[5];
+};
+
 struct Env {
-	struct Trapframe env_tf;        // Saved registers
+	//struct Trapframe env_tf;        // Saved registers
 	LIST_ENTRY(Env) env_link;       // Free list
 	u_int env_id;                   // Unique environment identifier
 	u_int env_parent_id;            // env_id of this env's parent
-	u_int env_status;               // Status of the environment
+	//u_int env_status;               // Status of the environment
 	Pde  *env_pgdir;                // Kernel virtual address of page dir
 	u_int env_cr3;
-	LIST_ENTRY(Env) env_sched_link;
-        u_int env_pri;
+	//LIST_ENTRY(Env) env_sched_link;
+        //u_int env_pri;
 	// Lab 4 IPC
+	u_int env_ipc_waiting_thread_no;
 	u_int env_ipc_value;            // data value sent to us 
 	u_int env_ipc_from;             // envid of the sender  
 	u_int env_ipc_recving;          // env is blocked receiving
@@ -41,23 +65,33 @@ struct Env {
 
 	// Lab 6 scheduler counts
 	u_int env_runs;			// number of times been env_run'ed
-	u_int env_nop;                  // align to avoid mul instruction
+	u_int env_thread_count;
+	u_int env_nop[496];                  // align to avoid mul instruction
+
+	// Lab 4 challenge
+	struct Tcb env_threads[8];
 };
 
+
 LIST_HEAD(Env_list, Env);
+LIST_HEAD(Tcb_list, Tcb);
 extern struct Env *envs;		// All environments
 extern struct Env *curenv;	        // the current env
+extern struct Tcb *curtcb;
 extern struct Env_list env_sched_list[2]; // runnable env list
+extern struct Tcb_list tcb_sched_list[2];
 
 void env_init(void);
-innenv_alloc(struct Env **e, u_int parent_id);
+int env_alloc(struct Env **e, u_int parent_id);
+int thread_alloc(struct Env *e, struct Tcb **t);
 void env_free(struct Env *);
 void env_create_priority(u_char *binary, int size, int priority);
 void env_create(u_char *binary, int size);
 void env_destroy(struct Env *e);
 
 int envid2env(u_int envid, struct Env **penv, int checkperm);
-void env_run(struct Env *e);
+int threadid2tcb(u_int threadid, struct Tcb **ptcb);
+void env_run(struct Tcb *e);
 
 
 // for the grading script

@@ -21,6 +21,8 @@ typedef int32_t                 register_t;
 typedef	unsigned char	u_char;
 typedef	unsigned short	u_short;
 typedef	unsigned int	u_int;
+typedef unsigned int 	pthread_t;
+typedef unsigned int	pthread_attr_t;
 typedef	unsigned long	u_long;
 
 typedef	u_int64_t	u_quad_t;	/* quads */

@@ -13,6 +13,9 @@ extern void libmain();
 extern void exit();
 
 extern struct Env *env;
+extern struct Tcb *tcb;
+extern int a;
+extern int b;
 
 
 #define USED(x) (void)(x)
@@ -65,6 +68,10 @@ void syscall_panic(char *msg);
 int syscall_ipc_can_send(u_int envid, u_int value, u_int srcva, u_int perm);
 void syscall_ipc_recv(u_int dstva);
 int syscall_cgetc();
+int syscall_thread_destroy(u_int threadid);
+u_int syscall_getthreadid();
+int syscall_thread_alloc();
+int syscall_set_thread_status(u_int threadid,u_int status);
 
 // string.c
 int strlen(const char *s);
@@ -124,6 +131,16 @@ int	read_map(int fd, u_int offset, void **blk);
 int	delete(const char *path);
 int	ftruncate(int fd, u_int size);
 int	sync(void);
+
+// pthread.c
+int 	pthread_create(pthread_t * thread, const pthread_attr_t * attr, void * (*start_routine)(void *), void * arg);
+void 	pthread_exit(void *value_ptr);
+int 	pthread_cancel(pthread_t thread);
+int	pthread_setcancelstate(int state, int *oldvalue);
+int	pthread_setcanceltype(int type, int *oldvalue);
+void	pthread_testcancel(void);
+
+
 
 #define user_assert(x)	\
 	do {	if (!(x)) user_panic("assertion failed: %s", #x); } while (0)

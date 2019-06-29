@@ -15,34 +15,48 @@ void sched_yield(void)
 {
 	static int times = 0;
 	struct Env *e = curenv;
+	struct Tcb *t = curtcb;
 	static int sched_i = 0;
-	if (!e) {
-		while (LIST_EMPTY(&env_sched_list[sched_i]))
+	if (!t) {
+		//printf("in 1\n");
+		while (LIST_EMPTY(&tcb_sched_list[sched_i])) {
 			sched_i ^= 1;
-		e = LIST_FIRST(&env_sched_list[sched_i]);
-		times = e->env_pri;
+		//	printf("empty1!\n");
+		}
+		t = LIST_FIRST(&tcb_sched_list[sched_i]);
+		times = t->tcb_pri;
 		times -= 1;
-		env_run(e);
-	} else if (e->env_status != ENV_RUNNABLE) {
-		while (LIST_EMPTY(&env_sched_list[sched_i]))
+		//printf("now tcb is 0x%x\n",t->thread_id);
+		//printf("now t.pc is 0x%x\n",t->tcb_tf.pc);
+		env_run(t);
+	} else if (t->tcb_status != ENV_RUNNABLE) {
+		//printf("in 2, tcbid is 0x%x\n",t->thread_id);
+		while (LIST_EMPTY(&tcb_sched_list[sched_i])) {
 			sched_i ^= 1;
-		e = LIST_FIRST(&env_sched_list[sched_i]);
-		times = e->env_pri;
+		//	printf("empty2!\n");
+		}
+		t = LIST_FIRST(&tcb_sched_list[sched_i]);
+		times = t->tcb_pri;
 		times -= 1;
-		env_run(e);
+		//printf("now threadid is 0x%x\n",t->thread_id);
+		env_run(t);
 	}
 	if (times <= 0) {
-		LIST_REMOVE(e,env_sched_link);
-		LIST_INSERT_HEAD(&env_sched_list[sched_i^1],e,env_sched_link);
-		while (LIST_EMPTY(&env_sched_list[sched_i])) {
+		//printf("in 3, tcbid is 0x%x\n",t->thread_id);
+		LIST_REMOVE(t,tcb_sched_link);
+		LIST_INSERT_HEAD(&tcb_sched_list[sched_i^1],t,tcb_sched_link);
+		while (LIST_EMPTY(&tcb_sched_list[sched_i])) {
 			sched_i ^= 1;
+			//printf("empty3!\n");
 		}
-		e = LIST_FIRST(&env_sched_list[sched_i]);
-		times = e->env_pri;
+		t = LIST_FIRST(&tcb_sched_list[sched_i]);
+		times = t->tcb_pri;
 		times -= 1;
-		env_run(e);
+		//printf("now thread id is 0x%x\n",t->thread_id);
+		env_run(t);
 	} else {
+		//printf("in 4, tcbid is 0x%x\n",t->thread_id);
 		times -= 1;
-		env_run(e);
+		env_run(t);
 	}
 }

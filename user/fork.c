@@ -194,6 +194,7 @@ fork(void)
 	newenvid = syscall_env_alloc();
 	if (newenvid == 0) {
 		env = &envs[ENVX(syscall_getenvid())];
+		tcb = &env->env_threads[0];
 		return 0;
 	}
 	if (newenvid != 0) {
@@ -232,4 +233,5 @@ sfork(void)
 {
 	user_panic("sfork not implemented");
 	return -E_INVAL;
+
 }
