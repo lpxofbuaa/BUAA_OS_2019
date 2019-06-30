@@ -3,7 +3,6 @@
 void *test1(void *args) {
 	u_int father_threadid = ((u_int *)args)[0];
 	u_int *ret;
-	writef("son1 father id is 0x%x\n",father_threadid);
 	writef("son1 is working\n");
 	if (pthread_join(father_threadid,&ret) < 0) {
 		writef("son1 fail join!\n");
@@ -58,7 +57,7 @@ void umain() {
 		syscall_yield();
 	}
 	//pthread_exit(&ret);
-	pthread_setcancelstate(THREAD_CAN_BE_CANCELED,0);
-	pthread_create(&thread4,NULL,test4,(void *)a);
-	while (1);
+	//pthread_setcancelstate(THREAD_CAN_BE_CANCELED,0);
+	//pthread_create(&thread4,NULL,test4,(void *)a);
+	//while (1);
 }

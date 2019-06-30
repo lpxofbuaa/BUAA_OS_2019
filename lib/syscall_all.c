@@ -541,20 +541,18 @@ int sys_sem_wait(int sysno,sem_t *sem)
 		--sem->sem_value;
 		return 0;
 	}
-	//++sem->sem_wait_count;
-	for(i = 0; i < 10; ++i) {
-		if (sem->sem_wait_list[(i+sem->sem_wait_count)%10] == 0) {
-			sem->sem_wait_list[(i+sem->sem_wait_count)%10] = curtcb;
-			++sem->sem_wait_count;
-			sys_set_thread_status(0,0,ENV_NOT_RUNNABLE);
-			struct Trapframe *trap = (struct Trapframe *)(KERNEL_SP - sizeof(struct Trapframe));
-			trap->regs[2] = 0;
-			trap->pc = trap->cp0_epc;
-			//printf("wait thread is 0x%x\n",curtcb->thread_id);
-			sys_yield();
-
-		}	
+	if (sem->sem_wait_count >= 10) {
+		return -E_SEM_ERROR;
 	}
+	sem->sem_wait_list[sem->sem_head_index] = curtcb;
+	sem->sem_head_index = (sem->sem_head_index + 1) % 10;
+	++sem->sem_wait_count;
+	sys_set_thread_status(0,0,ENV_NOT_RUNNABLE);
+	struct Trapframe *trap = (struct Trapframe *)(KERNEL_SP - sizeof(struct Trapframe));
+	trap->regs[2] = 0;
+	trap->pc = trap->cp0_epc;
+	//printf("wait thread is 0x%x\n",curtcb->thread_id);
+	sys_yield();
 	return -E_SEM_ERROR;
 }
 
@@ -582,18 +580,12 @@ int sys_sem_post(int sysno, sem_t *sem)
 			++sem->sem_value;
 		}
 		else {
-			int i;
 			struct Tcb *t;
-			for (i = 0; i < 10; ++i) {
-				if (sem->sem_wait_list[i] != 0) {
-					--sem->sem_wait_count;
-					t = sem->sem_wait_list[i];
-					sem->sem_wait_list[i] = 0;
-					sys_set_thread_status(0,t->thread_id,ENV_RUNNABLE);
-					//printf("wake up thread 0x%x\n",t->thread_id);
-					break;	
-				}
-			}
+			--sem->sem_wait_count;
+			t = sem->sem_wait_list[sem->sem_tail_index];
+			sem->sem_wait_list[sem->sem_tail_index] = 0;
+			sem->sem_tail_index = (sem->sem_tail_index + 1) % 10;
+			sys_set_thread_status(0,t->thread_id,ENV_RUNNABLE);
 		}
 	}
 	return 0;

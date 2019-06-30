@@ -27,6 +27,7 @@ void mips_init()
 	//ENV_CREATE_PRIORITY(user_b,2);
 	//ENV_CREATE(user_helloworld);
 	//ENV_CREATE(user_pttest);
+	//ENV_CREATE(user_ptstacktest);
 	//ENV_CREATE(user_ptexittest);
 	//ENV_CREATE(user_ptcanceltest);
 	//ENV_CREATE(user_ptjointest);

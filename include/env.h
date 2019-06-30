@@ -32,34 +32,40 @@
 #define SEM_VALID	1
 
 struct Tcb {
+	// basic information
 	struct Trapframe tcb_tf;
 	u_int thread_id;
 	u_int tcb_status;
+	u_int tcb_pri;
+
+	// pthread_join information
 	LIST_ENTRY(Tcb) tcb_sched_link;
 	LIST_ENTRY(Tcb) tcb_joined_link;
 	LIST_HEAD(Tcb_joined_list,Tcb);
 	struct Tcb_joined_list tcb_joined_list;
 	void **tcb_join_value_ptr;
 	u_int tcb_detach;
-	u_int tcb_pri;
+
+	// pthread_exit information
 	void *tcb_exit_ptr;
 	int tcb_exit_value;
+
+	// pthread_cancel information
 	int tcb_cancelstate;
 	int tcb_canceltype;
 	u_int tcb_canceled;
+
+	// keep bytes
 	u_int tcb_nop[10];
 };
 
 struct Env {
-	//struct Trapframe env_tf;        // Saved registers
 	LIST_ENTRY(Env) env_link;       // Free list
 	u_int env_id;                   // Unique environment identifier
 	u_int env_parent_id;            // env_id of this env's parent
-	//u_int env_status;               // Status of the environment
 	Pde  *env_pgdir;                // Kernel virtual address of page dir
 	u_int env_cr3;
-	//LIST_ENTRY(Env) env_sched_link;
-        //u_int env_pri;
+
 	// Lab 4 IPC
 	u_int env_ipc_waiting_thread_no;
 	u_int env_ipc_value;            // data value sent to us 
@@ -74,7 +80,11 @@ struct Env {
 
 	// Lab 6 scheduler counts
 	u_int env_runs;			// number of times been env_run'ed
+
+	// Lab 4 challenge
 	u_int env_thread_count;
+
+	// keep bytes
 	u_int env_nop[496];                  // align to avoid mul instruction
 
 	// Lab 4 challenge
@@ -83,6 +93,8 @@ struct Env {
 
 struct sem {
 	u_int sem_envid;
+	u_int sem_head_index;
+	u_int sem_tail_index;
 	char sem_name[16];
 	int sem_value;
 	int sem_status;

@@ -1,5 +1,4 @@
 #include "lib.h"
-
 void *buy(void *args) {
 	sem_t *mutex = (sem_t *)((u_int *)args)[0];
 	int *b = (int *)((u_int *)args)[1];
@@ -8,7 +7,7 @@ void *buy(void *args) {
 	int exitflag = 0;
 	while (1) {
 		sem_wait(mutex);
-		writef("son%d got mutex\n",son);
+		//writef("son%d got mutex\n",son);
 		if (*b > 0) {
 			c = *b;
 			*b = *b - 1;
@@ -19,7 +18,7 @@ void *buy(void *args) {
 		} else if (*b < 0) {
 			user_panic("panic at son%d, tickets are %d\n",son,*b);
 		}
-		writef("son%d free mutex\n",son);
+		//writef("son%d free mutex\n",son);
 		sem_post(mutex);
 		if (exitflag) {
 			break;
@@ -27,7 +26,6 @@ void *buy(void *args) {
 	}
 	pthread_exit(0);
 }
-
 void umain() {
 	u_int arg1[3];
 	u_int arg2[3];
@@ -37,7 +35,7 @@ void umain() {
 	arg1[0] = &mutex;
 	arg2[0] = &mutex;
 	arg3[0] = &mutex;
-	int sum = 20;
+	int sum = 100;
 	arg1[1] = &sum;
 	arg2[1] = &sum;
 	arg3[1] = &sum;

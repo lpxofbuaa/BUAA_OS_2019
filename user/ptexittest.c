@@ -18,10 +18,7 @@ void umain() {
 	args[2] = 3;
 	pthread_create(&thread,NULL,test,(void *)args);
 	writef("son is create!\n");
-	//writef("thread id is 0x%x\n",thread);
-	while ((int)env->env_threads[thread&0x7].tcb_exit_ptr == 0) {
-		//writef("void is %d\n",(int)env->env_threads[thread&0x7].tcb_exit_ptr);
-		//writef("thread id is 0x%x\n",thread);
+	while ((int)env->env_threads[thread&0x7].tcb_status != ENV_FREE) {
 	}
 	writef("son exit ret is %d\n",*((int *)env->env_threads[thread&0x7].tcb_exit_ptr));
 }

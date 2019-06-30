@@ -75,10 +75,10 @@ void pthread_testcancel() {
 int pthread_cancel(pthread_t thread) {
 	struct Tcb *t = &env->env_threads[thread&0x7];
 	if ((t->thread_id != thread)|(t->tcb_status == ENV_FREE)) {
-		return E_THREAD_NOTFOUND;
+		return -E_THREAD_NOTFOUND;
 	}
 	if (t->tcb_cancelstate == THREAD_CANNOT_BE_CANCELED) {
-		return E_THREAD_CANNOTCANCEL;
+		return -E_THREAD_CANNOTCANCEL;
 	}
 	t->tcb_exit_value = -THREAD_CANCELED_EXIT;
 	if (t->tcb_canceltype == THREAD_CANCEL_IMI) {

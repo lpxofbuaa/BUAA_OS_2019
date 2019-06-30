@@ -9,10 +9,10 @@ void *test(void *args) {
 
 void *test2(void *args) {
 	int oldvalue;
-	pthread_setcancelstate(1,&oldvalue);
-	writef("oldstate is %d\n",oldvalue);
 	pthread_setcanceltype(1,&oldvalue);
 	writef("oldtype is %d\n",oldvalue);
+	pthread_setcancelstate(1,&oldvalue);
+	writef("oldstate is %d\n",oldvalue);
 	while (1) {
 		pthread_testcancel();
 		writef("son cannot be canceled\n");
@@ -34,9 +34,7 @@ void umain() {
 	if (pthread_create(&thread,NULL,test2,(void *)a)) {
 		user_panic("create thread fail 2\n");
 	}
-	syscall_yield();
-	syscall_yield();
-	pthread_cancel(thread);
+	while (pthread_cancel(thread) < 0);
 	writef("father now canceled son!\n");
 	syscall_yield();
 }

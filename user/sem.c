@@ -5,6 +5,8 @@ int sem_init(sem_t *sem,int shared,unsigned int value) {
 	if (sem == 0) {
 		return -E_SEM_ERROR;
 	}
+	sem->sem_head_index = 0;
+	sem->sem_tail_index = 0;
 	sem->sem_envid = env->env_id;
 	sem->sem_name[0] = '\0';
 	sem->sem_value = value;
