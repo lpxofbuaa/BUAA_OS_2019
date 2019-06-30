@@ -4,6 +4,7 @@
 #include <printf.h>
 #include <pmap.h>
 #include <sched.h>
+#include <error.h>
 
 extern char *KERNEL_SP;
 extern struct Env *curenv;
@@ -515,5 +516,96 @@ int sys_thread_join(int sysno, u_int threadid, void **value_ptr)
 	trap->regs[2] = 0;
 	trap->pc = trap->cp0_epc;
 	sys_yield();
+	return 0;
+}
+
+int sys_sem_destroy(int sysno,sem_t *sem)
+{
+	if ((sem->sem_envid != curenv->env_id)&(sem->sem_shared == 0)) {
+		return -E_SEM_NOTFOUND;
+	}
+	if (sem->sem_status == SEM_FREE) {
+		return 0;
+	}
+	sem->sem_status = SEM_FREE;
+	return 0;
+}
+
+int sys_sem_wait(int sysno,sem_t *sem)
+{
+	if (sem->sem_status == SEM_FREE) {
+		return -E_SEM_ERROR;
+	}
+	int i;
+	if (sem->sem_value > 0) {
+		--sem->sem_value;
+		return 0;
+	}
+	//++sem->sem_wait_count;
+	for(i = 0; i < 10; ++i) {
+		if (sem->sem_wait_list[(i+sem->sem_wait_count)%10] == 0) {
+			sem->sem_wait_list[(i+sem->sem_wait_count)%10] = curtcb;
+			++sem->sem_wait_count;
+			sys_set_thread_status(0,0,ENV_NOT_RUNNABLE);
+			struct Trapframe *trap = (struct Trapframe *)(KERNEL_SP - sizeof(struct Trapframe));
+			trap->regs[2] = 0;
+			trap->pc = trap->cp0_epc;
+			//printf("wait thread is 0x%x\n",curtcb->thread_id);
+			sys_yield();
+
+		}	
+	}
+	return -E_SEM_ERROR;
+}
+
+int sys_sem_trywait(int sysno, sem_t *sem)
+{
+	if (sem->sem_status == SEM_FREE) {
+		return -E_SEM_ERROR;
+	}
+	if (sem->sem_value > 0) {
+		--sem->sem_value;
+		return 0;
+	}
+	return -E_SEM_EAGAIN;
+}
+
+int sys_sem_post(int sysno, sem_t *sem)
+{
+	if (sem->sem_status == SEM_FREE) {
+		return -E_SEM_ERROR;
+	}
+	if (sem->sem_value > 0) {
+		++sem->sem_value;
+	} else {
+		if (sem->sem_wait_count == 0) {
+			++sem->sem_value;
+		}
+		else {
+			int i;
+			struct Tcb *t;
+			for (i = 0; i < 10; ++i) {
+				if (sem->sem_wait_list[i] != 0) {
+					--sem->sem_wait_count;
+					t = sem->sem_wait_list[i];
+					sem->sem_wait_list[i] = 0;
+					sys_set_thread_status(0,t->thread_id,ENV_RUNNABLE);
+					//printf("wake up thread 0x%x\n",t->thread_id);
+					break;	
+				}
+			}
+		}
+	}
+	return 0;
+}
+
+int sys_sem_getvalue(int sysno, sem_t *sem, int *valp)
+{
+	if (sem->sem_status == SEM_FREE) {
+		return -E_SEM_ERROR;
+	}
+	if (valp != 0) {
+		*valp = sem->sem_value;
+	}
 	return 0;
 }

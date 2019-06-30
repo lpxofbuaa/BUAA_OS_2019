@@ -2,7 +2,7 @@
 #define UNISTD_H
 
 #define __SYSCALL_BASE 9527
-#define __NR_SYSCALLS 20
+#define __NR_SYSCALLS 25
 
 
 #define SYS_putchar 		((__SYSCALL_BASE ) + (0 ) )
@@ -25,4 +25,10 @@
 #define SYS_thread_alloc	((__SYSCALL_BASE ) + (17 ))
 #define SYS_set_thread_status	((__SYSCALL_BASE ) + (18 ))
 #define SYS_thread_join		((__SYSCALL_BASE ) + (19 ))
+#define SYS_sem_destroy		((__SYSCALL_BASE ) + (20 ))
+#define SYS_sem_wait		((__SYSCALL_BASE ) + (21 ))
+#define SYS_sem_trywait		((__SYSCALL_BASE ) + (22 ))
+#define SYS_sem_post		((__SYSCALL_BASE ) + (23 ))
+#define SYS_sem_getvalue		((__SYSCALL_BASE ) + (24 ))
+
 #endif

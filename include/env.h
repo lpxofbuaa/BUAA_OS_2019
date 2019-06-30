@@ -28,6 +28,9 @@
 
 #define E_THREAD_JOIN_FAIL		16
 
+#define SEM_FREE	0
+#define SEM_VALID	1
+
 struct Tcb {
 	struct Trapframe tcb_tf;
 	u_int thread_id;
@@ -78,6 +81,15 @@ struct Env {
 	struct Tcb env_threads[8];
 };
 
+struct sem {
+	u_int sem_envid;
+	char sem_name[16];
+	int sem_value;
+	int sem_status;
+	int sem_shared;
+	int sem_wait_count;
+	struct Tcb *sem_wait_list[10];
+};
 
 LIST_HEAD(Env_list, Env);
 LIST_HEAD(Tcb_list, Tcb);

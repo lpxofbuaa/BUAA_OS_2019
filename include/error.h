@@ -26,7 +26,10 @@
 #define E_THREAD_NOTFOUND 14
 #define E_THREAD_CANNOTCANCEL 15
 
+#define E_SEM_ERROR	16
+#define E_SEM_NOTFOUND	17
+#define E_SEM_EAGAIN	18
 
-#define MAXERROR 16
+#define MAXERROR 18
 
 #endif // _ERROR_H_

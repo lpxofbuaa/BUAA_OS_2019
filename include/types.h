@@ -24,6 +24,7 @@ typedef	unsigned int	u_int;
 typedef unsigned int 	pthread_t;
 typedef unsigned int	pthread_attr_t;
 typedef	unsigned long	u_long;
+typedef struct sem	sem_t;
 
 typedef	u_int64_t	u_quad_t;	/* quads */
 typedef	int64_t		quad_t;

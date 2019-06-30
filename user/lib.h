@@ -72,6 +72,13 @@ int syscall_thread_destroy(u_int threadid);
 u_int syscall_getthreadid();
 int syscall_thread_alloc();
 int syscall_set_thread_status(u_int threadid,u_int status);
+int syscall_thread_join(u_int threadid, void **value_ptr);
+int syscall_sem_destroy(sem_t *sem);
+int syscall_sem_wait(sem_t *sem);
+int syscall_sem_trywait(sem_t *sem);
+int syscall_sem_post(sem_t *sem);
+int syscall_sem_getvalue(sem_t *sem,int *valp);
+
 
 // string.c
 int strlen(const char *s);
@@ -141,6 +148,14 @@ int	pthread_setcanceltype(int type, int *oldvalue);
 void	pthread_testcancel(void);
 int 	pthread_detach(pthread_t thread);
 int	pthread_join(pthread_t thread, void **value_ptr);
+
+// sem.c
+int	sem_init(sem_t *sem,int shared,unsigned int value);
+int 	sem_destroy(sem_t *sem);
+int 	sem_wait(sem_t *sem);
+int	sem_trywait(sem_t *sem);
+int	sem_post(sem_t *sem);
+int 	sem_getvalue(sem_t *sem, int *valp);
 
 
 
